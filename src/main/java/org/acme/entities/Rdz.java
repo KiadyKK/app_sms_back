@@ -1,4 +1,4 @@
-package org.acme.domain.entities;
+package org.acme.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
