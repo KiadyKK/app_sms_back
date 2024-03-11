@@ -7,35 +7,23 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.models.requests.AddUserReq;
-import org.acme.models.requests.LoginReq;
-import org.acme.services.UserService;
+import org.acme.models.requests.AddRdzReq;
+import org.acme.services.RdzService;
 
 import static org.acme.common.Constant.APPSMS;
 
-@Path("user")
+@Path("rdz")
 @ApplicationScoped
-public class UserResource {
+public class RdzRessource {
     @Inject
-    UserService userService;
+    RdzService rdzService;
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @Path("login")
-    public Response signUp(LoginReq req) {
-        return userService.login(req);
-    }
-
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed({APPSMS})
-    @Transactional
-    @Path("new")
-    public Response addUser(AddUserReq req) {
-        return userService.addUser(req);
+    public Response addRdz(AddRdzReq req) {
+        return rdzService.addRdz(req);
     }
 
     @GET
@@ -43,7 +31,7 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({APPSMS})
     public Response getAll(@QueryParam("nom") String nom) {
-        return userService.getAll(nom);
+        return rdzService.getAll(nom);
     }
 
     @DELETE
@@ -53,6 +41,6 @@ public class UserResource {
     @Transactional
     @Path("{id}")
     public Response remove(@PathParam("id") long id) {
-        return userService.delete(id);
+        return rdzService.delete(id);
     }
 }
