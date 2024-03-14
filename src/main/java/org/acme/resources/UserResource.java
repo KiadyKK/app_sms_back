@@ -7,8 +7,8 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.models.requests.AddUserReq;
-import org.acme.models.requests.LoginReq;
+import org.acme.requests.AddUserReq;
+import org.acme.requests.LoginReq;
 import org.acme.services.UserService;
 
 import static org.acme.common.Constant.APPSMS;

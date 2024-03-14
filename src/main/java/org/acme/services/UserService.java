@@ -5,10 +5,10 @@ import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-import org.acme.entities.User;
-import org.acme.models.requests.AddUserReq;
-import org.acme.models.requests.LoginReq;
-import org.acme.repository.UserRepo;
+import org.acme.model.app_sms_833.User;
+import org.acme.requests.AddUserReq;
+import org.acme.requests.LoginReq;
+import org.acme.repo.app_sms_833.UserRepo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 

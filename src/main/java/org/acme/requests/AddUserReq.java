@@ -1,4 +1,4 @@
-package org.acme.models.requests;
+package org.acme.requests;
 
 import lombok.Data;
 

@@ -7,14 +7,14 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.models.requests.AddRdzReq;
+import org.acme.requests.AddRdzReq;
 import org.acme.services.RdzService;
 
 import static org.acme.common.Constant.APPSMS;
 
 @Path("rdz")
 @ApplicationScoped
-public class RdzRessource {
+public class RdzResource {
     @Inject
     RdzService rdzService;
 

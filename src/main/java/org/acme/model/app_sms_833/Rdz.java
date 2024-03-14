@@ -1,10 +1,10 @@
-package org.acme.entities;
+package org.acme.model.app_sms_833;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.acme.models.requests.AddRdzReq;
+import org.acme.requests.AddRdzReq;
 
 @Getter
 @Setter
@@ -34,17 +34,20 @@ public class Rdz {
     @Column
     private int status;
 
-    @ManyToOne
-    @JoinColumn(name = "idZone")
-    private Zone zone;
+    @Column
+    private long idZone;
 
-    public Rdz(AddRdzReq req, Zone zone) {
+    @Column
+    private String zone;
+
+    public Rdz(AddRdzReq req) {
         this.tri = req.getTri();
         this.nom = req.getNom();
         this.prenom = req.getPrenom();
         this.tel = req.getTel();
         this.email = req.getEmail();
         this.status = 1;
-        this.zone = zone;
+        this.idZone = req.getIdZone();
+        this.zone = req.getZone();
     }
 }

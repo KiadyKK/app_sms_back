@@ -1,14 +1,11 @@
-package org.acme.dto;
+package org.acme.model.dm_rf;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.acme.entities.Rdz;
-
-import java.util.List;
 
 @Getter
 @Setter
-public class ZoneDto {
+public class Zone {
     private long id;
 
     private String name;

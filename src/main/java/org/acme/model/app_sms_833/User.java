@@ -1,10 +1,10 @@
-package org.acme.entities;
+package org.acme.model.app_sms_833;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.acme.models.requests.AddUserReq;
+import org.acme.requests.AddUserReq;
 
 @Getter
 @Setter

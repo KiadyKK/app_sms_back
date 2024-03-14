@@ -1,10 +1,12 @@
-package org.acme.models.requests;
+package org.acme.requests;
 
 import lombok.Data;
 
 @Data
 public class AddRdzReq {
-    private long zone;
+    private long IdZone;
+
+    private String zone;
 
     private String nom;
 

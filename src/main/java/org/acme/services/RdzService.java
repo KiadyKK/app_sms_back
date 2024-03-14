@@ -3,14 +3,10 @@ package org.acme.services;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-import org.acme.dto.RdzDto;
-import org.acme.entities.Rdz;
-import org.acme.entities.User;
-import org.acme.entities.Zone;
 import org.acme.mappers.RdzMapper;
-import org.acme.models.requests.AddRdzReq;
-import org.acme.repository.RdzRepo;
-import org.acme.repository.ZoneRepo;
+import org.acme.model.app_sms_833.Rdz;
+import org.acme.repo.app_sms_833.RdzRepo;
+import org.acme.requests.AddRdzReq;
 import org.jboss.logging.Logger;
 import org.mapstruct.factory.Mappers;
 
@@ -21,28 +17,21 @@ public class RdzService {
     @Inject
     Logger LOGGER;
 
-    private final RdzMapper rdzMapper = Mappers.getMapper(RdzMapper.class);
+//    private final RdzMapper rdzMapper = Mappers.getMapper(RdzMapper.class);
 
     @Inject
     RdzRepo rdzRepo;
 
-    @Inject
-    ZoneRepo zoneRepo;
-
     public Response addRdz(AddRdzReq req) {
-        Zone zone = zoneRepo.findById(req.getZone());
-
-        Rdz rdz = new Rdz(req, zone);
+        Rdz rdz = new Rdz(req);
         rdzRepo.persist(rdz);
 
-        RdzDto rdzDto = rdzMapper.entityToDto(rdz);
-        return Response.ok(rdzDto).build();
+        return Response.ok(rdz).build();
     }
 
     public Response getAll(String nom) {
         List<Rdz> rdzs = rdzRepo.getAll(nom);
-        List<RdzDto> rdzDtos = rdzs.stream().map(rdzMapper::entityToDto).toList();
-        return Response.ok(rdzDtos).build();
+        return Response.ok(rdzs).build();
     }
 
     public Response delete(long id) {
