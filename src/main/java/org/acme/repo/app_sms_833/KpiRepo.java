@@ -19,7 +19,12 @@ public class KpiRepo implements PanacheRepository<Kpi> {
         return find("jour = ?1", jour).firstResult();
     }
 
-    public List<Kpi> getAll() {
-        return findAll().stream().toList();
+    public List<Kpi> getAll(LocalDate date) {
+        return find("jour = ?1", date).list();
+    }
+
+    @Transactional
+    public long removeAll(LocalDate date) {
+        return delete("jour = ?1", date);
     }
 }

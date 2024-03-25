@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.acme.requests.AddUserReq;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Getter
 @Setter
@@ -18,6 +19,9 @@ public class User {
 
     @Column
     private String tri;
+
+    @Column
+    private String mdp;
 
     @Column
     private String nom;
@@ -39,6 +43,7 @@ public class User {
 
     public User(AddUserReq req) {
         this.tri = req.getTri();
+        this.mdp = BCrypt.hashpw(req.getTri(), BCrypt.gensalt());
         this.nom = req.getNom();
         this.prenom = req.getPrenom();
         this.email = req.getEmail();

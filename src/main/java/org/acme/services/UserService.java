@@ -6,11 +6,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.User;
+import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.requests.AddUserReq;
 import org.acme.requests.LoginReq;
-import org.acme.repo.app_sms_833.UserRepo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,9 +43,14 @@ public class UserService {
 
         if (tri.equals(ADMIN_TRI) && mdp.equals(ADMIN_MDP)) {
             return generateJwt(user);
+        } else {
+            boolean checkMdp = BCrypt.checkpw(req.getMdp(), user.getMdp());
+            if (!checkMdp) {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Password !").build();
+            } else {
+                return generateJwt(user);
+            }
         }
-
-        return Response.noContent().build();
     }
 
     private Response generateJwt(User user) {

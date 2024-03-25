@@ -19,7 +19,6 @@ public class DwhRepo {
     AgroalDataSource dataSource;
 
     public List<DwhRes> getAll(LocalDate startDate, LocalDate endDate) {
-
         String query = "SELECT " +
                 "mois_annee," +
                 "upd_dt jour," +

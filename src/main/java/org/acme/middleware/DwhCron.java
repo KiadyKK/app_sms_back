@@ -32,10 +32,10 @@ public class DwhCron {
     @Inject
     DwhRepo dwhRepo;
 
-    @Scheduled(cron = "0 30 10 * * ?")
+    @Scheduled(cron = "0 30 09 * * ?")
     void loadDwhData() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(1);
+        LocalDate startDate = LocalDate.now().minusDays(2);
+        LocalDate endDate = startDate.plusDays(1);
         String checkData;
 
         Optional<Kpi> optional = Optional.ofNullable(kpiRepo.getByJour(startDate));
@@ -60,7 +60,7 @@ public class DwhCron {
 
         List<User> users = userRepo.findAll().stream().toList();
         for (User user : users) {
-            mailShared.sendMail(user.getEmail(), startDate, checkData);
+            mailShared.sendMail(user.getEmail(), endDate, checkData);
         }
     }
 }

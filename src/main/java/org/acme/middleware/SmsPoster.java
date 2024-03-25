@@ -22,7 +22,8 @@ public class SmsPoster {
                 try {
                     // Config config = new Config(); // TODO: USE CONFIG
                     // String URL = config.getUrlApiSms();
-                    String URL = "http://10.249.8.70:8081/sendsms/";
+//                    String URL = "http://10.249.8.70:8081/sendsms/";
+                    String URL = "http://10.249.248.40:80/sendsms/";
                     URL url = new URL(URL + msisdnFrom + "/" + msisdnTo);
                     URLConnection urlConnection = url.openConnection();
                     httpConn = (HttpURLConnection) urlConnection;
@@ -53,5 +54,6 @@ public class SmsPoster {
                 }
             }
         }).start();
+        System.out.println("================> : sms send to " + msisdnTo);
     }
 }
