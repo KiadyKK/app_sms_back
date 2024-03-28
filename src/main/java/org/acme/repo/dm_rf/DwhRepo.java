@@ -160,6 +160,7 @@ public class DwhRepo {
                 "INNER JOIN DM_RF.`rf_recharge_code` rc ON rc.code = c.channel_id " +
                 "INNER JOIN DM_RF.rf_rec_type rf  ON rf.id = rc.rec_type " +
                 "LEFT JOIN DM_RF.rf_sig_cell_krill_v3 sg ON sg.sig_lac_ci=c.cell_id " +
+//                "WHERE upd_dt BETWEEN '" + startDate + "' AND '" + endDate + "' " +
                 "WHERE upd_dt BETWEEN '" + startDate + "' AND '" + endDate + "' " +
                 "GROUP BY zone " +
                 ")cumul_rec " +
