@@ -26,6 +26,9 @@ public class DwhRepo {
                 "SUM(parc) 'parc'," +
                 "SUM(activation) activation," +
                 "SUM(cumul_activation) cumul_activation," +
+                "SUM(cb_30jours) cb_30jours,"+
+                "SUM(cb_7jours) cb_7jours," +
+                "SUM(cb_30jours_data) cb_30jours_data," +
                 "SUM(nb_rec) nb_rec," +
                 "SUM(cumul_nb_rec) cumul_nb_rec," +
                 "SUM(mtt_rec) mtt_rec," +
@@ -95,6 +98,30 @@ public class DwhRepo {
                 "AND billing_type IN (1,5) " +
                 "AND statut = 1 " +
                 "GROUP BY mois_annee, zone " +
+                "UNION ALL " +
+                "SELECT " +
+                "DATE_FORMAT(upd_dt, \"%m-%Y\") mois_annee," +
+                "upd_dt," +
+                "CASE " +
+                "WHEN rf.sig_zoneorange_name_v3 IS NULL THEN 'INCONNU'" +
+                "ELSE rf.sig_zoneorange_name_v3 " +
+                "END AS zone," +
+                "0 parc," +
+                "0 activation," +
+                "0 cumul_activation," +
+                "SUM(qty2) cb_30jours," +
+                "SUM(qty4) cb_7jours," +
+                "SUM(qty3) cb_30jours_data," +
+                "0 nb_rec," +
+                "0 cumul_nb_rec," +
+                "0 mtt_rec," +
+                "0 cumul_mtt_rec " +
+                "FROM DM_OD.od_parc_orange od " +
+                "LEFT JOIN DM_RF.`rf_sig_cell_krill_v3` rf ON od.site_id =rf.sig_id " +
+                "WHERE upd_dt = '" + endDate + "' " +
+                "AND statut <> '4' " +
+                "AND billing_type = '1' " +
+                "GROUP BY upd_dt, zone " +
                 "UNION ALL " +
                 "SELECT " +
                 "DATE_FORMAT(upd_dt, \"%m-%Y\") mois_annee," +
@@ -179,6 +206,9 @@ public class DwhRepo {
                     dwhRes.setParc(rs.getLong("parc"));
                     dwhRes.setActivation(rs.getLong("activation"));
                     dwhRes.setCumul_activation(rs.getLong("cumul_activation"));
+                    dwhRes.setCb_30jours(rs.getLong("cb_30jours"));
+                    dwhRes.setCb_7jours(rs.getLong("cb_7jours"));
+                    dwhRes.setCb_30jours_data(rs.getLong("cb_30jours_data"));
                     dwhRes.setNb_rec(rs.getLong("nb_rec"));
                     dwhRes.setCumul_nb_rec(rs.getLong("cumul_nb_rec"));
                     dwhRes.setMtt_rec(rs.getDouble("mtt_rec"));

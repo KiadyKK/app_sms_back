@@ -37,6 +37,15 @@ public class Kpi {
     private long cumul_activation;
 
     @Column
+    private long cb_30jours;
+
+    @Column
+    private long cb_7jours;
+
+    @Column
+    private long cb_30jours_data;
+
+    @Column
     private long nb_rec;
 
     @Column
@@ -55,6 +64,9 @@ public class Kpi {
         this.parc = dwhRes.getParc();
         this.activation = dwhRes.getActivation();
         this.cumul_activation = dwhRes.getCumul_activation();
+        this.cb_30jours = dwhRes.getCb_30jours();
+        this.cb_7jours = dwhRes.getCb_7jours();
+        this.cb_30jours_data = dwhRes.getCb_30jours_data();
         this.nb_rec = dwhRes.getNb_rec();
         this.cumul_nb_rec = dwhRes.getCumul_nb_rec();
         this.mtt_rec = dwhRes.getMtt_rec();
