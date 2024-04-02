@@ -18,6 +18,12 @@ public class DwhRes {
 
     private long activation;
 
+    private long cb_30jours;
+
+    private long cb_7jours;
+
+    private long cb_30jours_data;
+
     private long cumul_activation;
 
     private long nb_rec;
