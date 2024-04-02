@@ -132,9 +132,10 @@ public class KpiService {
         for (Kpi kpi : kpis) {
             String message = "Données du " + kpi.getJour() +
                     " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
+                    "cb 30jours (" + kpi.getCb_30jours() +"), cb 7jours (" + kpi.getCb_7jours() + "), cb 30jours data (" + kpi.getCb_30jours_data() + "), " +
                     "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
-                    "rec (" + kpi.getNb_rec() + "), mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
-                    "cum rec (" + kpi.getCumul_nb_rec() + "), mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
+                    "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
+                    "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
             for (Rdz rdz : rdzs) {
                 if (kpi.getZone().equals(rdz.getZone())) {
                     String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + rdz.getTel() + "&text=" + URLEncoder.encode(message, "UTF-8");

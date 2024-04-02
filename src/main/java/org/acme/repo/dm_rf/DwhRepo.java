@@ -30,8 +30,8 @@ public class DwhRepo {
                 "\tSUM(cb_30jours) cb_30jours,\n" +
                 "\tSUM(cb_7jours) cb_7jours, \n" +
                 "\tSUM(cb_30jours_data) cb_30jours_data,\n" +
-//                "\t#SUM(nb_rec) nb_rec,\n" +
-//                "\t#SUM(cumul_nb_rec) cumul_nb_rec,\n" +
+                "\tSUM(nb_rec) nb_rec,\n" +
+                "\tSUM(cumul_nb_rec) cumul_nb_rec,\n" +
                 "\tSUM(mtt_rec) mtt_rec,\n" +
                 "\tSUM(cumul_mtt_rec) cumul_mtt_rec\n" +
                 "FROM (\n" +
@@ -50,8 +50,8 @@ public class DwhRepo {
                 "\t\t0 cb_30jours,\n" +
                 "\t\t0 cb_7jours, \n" +
                 "\t\t0 cb_30jours_data,\n" +
-//                "\t\t#0 nb_rec,\n" +
-//                "\t\t#0 cumul_nb_rec,\n" +
+                "\t\t0 nb_rec,\n" +
+                "\t\t0 cumul_nb_rec,\n" +
                 "\t\t0 mtt_rec,\n" +
                 "\t\t0 cumul_mtt_rec\n" +
                 "\tFROM  DM_OD.od_parc_orange od \n" +
@@ -80,8 +80,8 @@ public class DwhRepo {
                 "\t\t0 cb_30jours,\n" +
                 "\t\t0 cb_7jours, \n" +
                 "\t\t0 cb_30jours_data,\n" +
-//                "\t\t#0 nb_rec,\n" +
-//                "\t\t#0 cumul_nb_rec,\n" +
+                "\t\t0 nb_rec,\n" +
+                "\t\t0 cumul_nb_rec,\n" +
                 "\t\t0 mtt_rec,\n" +
                 "\t\t0 cumul_mtt_rec\n" +
                 "\tFROM  DM_OD.od_parc_orange od \n" +
@@ -107,8 +107,8 @@ public class DwhRepo {
                 "\t\t0 cb_30jours,\n" +
                 "\t\t0 cb_7jours, \n" +
                 "\t\t0 cb_30jours_data,\n" +
-//                "\t\t#0 nb_rec,\n" +
-//                "\t\t#0 cumul_nb_rec,\n" +
+                "\t\t0 nb_rec,\n" +
+                "\t\t0 cumul_nb_rec,\n" +
                 "\t\t0 mtt_rec,\n" +
                 "\t\t0 cumul_mtt_rec\n" +
                 "\tFROM  DM_OD.od_parc_orange od \n" +
@@ -132,8 +132,8 @@ public class DwhRepo {
                 "\t\t0 cb_30jours,\n" +
                 "\t\t0 cb_7jours, \n" +
                 "\t\t0 cb_30jours_data,\n" +
-//                "\t\t#(rec.qty_scratch+(rec.qty_erecharge+rec.qty_om)) nb_rec,\n" +
-//                "\t\t#0 cumul_nb_rec,\n" +
+                "\t\t(rec.qty_scratch+(rec.qty_erecharge+rec.qty_om)) nb_rec,\n" +
+                "\t\t0 cumul_nb_rec,\n" +
                 "\t\t(rec.achat_scratch+(rec.achat_erecharge+rec.achat_om)) mtt_rec,\n" +
                 "\t\t0 cumul_mtt_rec\n" +
                 "\tFROM\t\n" +
@@ -171,8 +171,8 @@ public class DwhRepo {
                 "\t\t0 cb_30jours,\n" +
                 "\t\t0 cb_7jours, \n" +
                 "\t\t0 cb_30jours_data,\n" +
-//                "\t\t#0 nb_rec,\n" +
-//                "\t\t#(cumul_rec.qty_scratch+(cumul_rec.qty_erecharge+cumul_rec.qty_om)) cumul_nb_rec,\n" +
+                "\t\t0 nb_rec,\n" +
+                "\t\t(cumul_rec.qty_scratch+(cumul_rec.qty_erecharge+cumul_rec.qty_om)) cumul_nb_rec,\n" +
                 "\t\t0 mtt_rec,\n" +
                 "\t\t(cumul_rec.achat_scratch+(cumul_rec.achat_erecharge+cumul_rec.achat_om)) cumul_mtt_rec\n" +
                 "\tFROM\t\n" +
@@ -215,8 +215,8 @@ public class DwhRepo {
                 "\t\tSUM(qty2) cb_30jours,\n" +
                 "\t\tSUM(qty4) cb_7jours, \n" +
                 "\t\tSUM(qty3) cb_30jours_data,\n" +
-//                "\t\t#0 nb_rec,\n" +
-//                "\t\t#0 cumul_nb_rec,\n" +
+                "\t\t0 nb_rec,\n" +
+                "\t\t0 cumul_nb_rec,\n" +
                 "\t\t0 mtt_rec,\n" +
                 "\t\t0 cumul_mtt_rec\n" +
                 "\tFROM DM_OD.od_parc_orange od \n" +
@@ -425,8 +425,8 @@ public class DwhRepo {
                     dwhRes.setCb_30jours(rs.getLong("cb_30jours"));
                     dwhRes.setCb_7jours(rs.getLong("cb_7jours"));
                     dwhRes.setCb_30jours_data(rs.getLong("cb_30jours_data"));
-//                    dwhRes.setNb_rec(rs.getLong("nb_rec"));
-//                    dwhRes.setCumul_nb_rec(rs.getLong("cumul_nb_rec"));
+                    dwhRes.setNb_rec(rs.getLong("nb_rec"));
+                    dwhRes.setCumul_nb_rec(rs.getLong("cumul_nb_rec"));
                     dwhRes.setMtt_rec(rs.getDouble("mtt_rec"));
                     dwhRes.setCumul_mtt_rec(rs.getDouble("cumul_mtt_rec"));
                     dwhResList.add(dwhRes);

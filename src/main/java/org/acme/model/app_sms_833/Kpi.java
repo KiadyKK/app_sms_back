@@ -45,11 +45,11 @@ public class Kpi {
     @Column
     private long cb_30jours_data;
 
-    @Column
-    private long nb_rec;
-
-    @Column
-    private long cumul_nb_rec;
+//    @Column
+//    private long nb_rec;
+//
+//    @Column
+//    private long cumul_nb_rec;
 
     @Column
     private Double mtt_rec;
@@ -67,8 +67,8 @@ public class Kpi {
         this.cb_30jours = dwhRes.getCb_30jours();
         this.cb_7jours = dwhRes.getCb_7jours();
         this.cb_30jours_data = dwhRes.getCb_30jours_data();
-        this.nb_rec = dwhRes.getNb_rec();
-        this.cumul_nb_rec = dwhRes.getCumul_nb_rec();
+//        this.nb_rec = dwhRes.getNb_rec();
+//        this.cumul_nb_rec = dwhRes.getCumul_nb_rec();
         this.mtt_rec = dwhRes.getMtt_rec();
         this.cumul_mtt_rec = dwhRes.getMtt_rec();
     }
