@@ -1,5 +1,4 @@
 package org.acme.middleware;
-
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -10,11 +9,9 @@ import org.acme.repo.app_sms_833.KpiRepo;
 import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.repo.dm_rf.DwhRepo;
 import org.jboss.logging.Logger;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 @ApplicationScoped
 public class DwhCron {
     @Inject
@@ -32,7 +29,7 @@ public class DwhCron {
     @Inject
     DwhRepo dwhRepo;
 
-    @Scheduled(cron = "0 30 09 * * ?")
+    @Scheduled(cron = "{cron.expr}")
     void loadDwhData() {
         LocalDate startDate = LocalDate.now().minusDays(2);
         LocalDate endDate = startDate.plusDays(1);
@@ -57,10 +54,10 @@ public class DwhCron {
             checkData = " déjà chargées.";
             LOGGER.info("================================ données déjà chargées");
         }
-
         List<User> users = userRepo.findAll().stream().toList();
         for (User user : users) {
             mailShared.sendMail(user.getEmail(), endDate, checkData);
         }
+        System.out.println("Cron done!");
     }
 }
