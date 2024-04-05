@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.acme.requests.AddUserReq;
 import org.acme.requests.LoginReq;
+import org.acme.requests.PutPasswordReq;
 import org.acme.services.UserService;
 
 import static org.acme.common.Constant.APPSMS;
@@ -38,6 +39,10 @@ public class UserResource {
         return userService.addUser(req);
     }
 
+    @PUT
+    @Transactional
+    @Path("putMdp")
+    public Response putMdp(PutPasswordReq req){return userService.modifyMdp(req);}
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

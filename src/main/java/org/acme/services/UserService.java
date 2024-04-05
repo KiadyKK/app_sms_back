@@ -9,6 +9,7 @@ import org.acme.model.app_sms_833.User;
 import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.requests.AddUserReq;
 import org.acme.requests.LoginReq;
+import org.acme.requests.PutPasswordReq;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import org.mindrot.jbcrypt.BCrypt;
@@ -36,6 +37,7 @@ public class UserService {
         String tri = req.getTri();
         String mdp = req.getMdp();
 
+
         User user = userRepo.findByTri(tri);
         Optional<User> optional = Optional.ofNullable(user);
         if (optional.isEmpty())
@@ -50,6 +52,19 @@ public class UserService {
             } else {
                 return generateJwt(user);
             }
+        }
+    }
+    public Response modifyMdp(PutPasswordReq req){
+        String trigramme=req.getTrigramme();
+        String mdp=req.getPassword();
+        String newMdp=req.getNewPassword();
+        User user=userRepo.findByTri(trigramme);
+        boolean checkPassword=BCrypt.checkpw(req.getPassword(),user.getMdp());
+        if(checkPassword){
+            user.setMdp(BCrypt.hashpw(newMdp,BCrypt.gensalt()));
+            return Response.status(200).build();
+        }else{
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Password !").build();
         }
     }
 
