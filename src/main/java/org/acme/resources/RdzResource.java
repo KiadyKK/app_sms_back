@@ -34,6 +34,7 @@ public class RdzResource {
         return rdzService.getAll(nom);
     }
 
+
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
