@@ -19,10 +19,10 @@ public class MailShared {
     @Inject
     ReactiveMailer reactiveMailer;
 
-    public CompletionStage<String> sendMail(String to, LocalDate date, String checkData) {
+    public CompletionStage<String> sendMail(String to, LocalDate date, String message) {
         //String message = checkData ? " chargées." : " manquantes.";
         String message_html = "<html><head></head><body>Bonjour, </br></br>" +
-                "Données du " + date.toString() + checkData +
+                "Données du " + date.toString() + message +
                 " <br/></br>  Merci.</body></html>";
         Mail mail = Mail.withHtml(to, subject, message_html).setFrom(APP_MAIL);
         return reactiveMailer.send(mail).subscribeAsCompletionStage().thenApply(x -> "mail sent reactively");

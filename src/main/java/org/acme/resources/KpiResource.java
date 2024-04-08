@@ -68,8 +68,8 @@ public class KpiResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed({APPSMS})
     @Path("send")
-    public Response send(@HeaderParam("tri") String tri, @QueryParam("date") String date, @QueryParam("source") String source) throws UnsupportedEncodingException {
-        return kpiService.sendSms(date, source, tri);
+    public Response send(@HeaderParam("tri") String tri, @QueryParam("date") String date) throws UnsupportedEncodingException {
+        return kpiService.sendSms(date, tri);
     }
 
     @GET
