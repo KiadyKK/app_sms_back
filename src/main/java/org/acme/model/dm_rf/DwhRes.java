@@ -20,9 +20,11 @@ public class DwhRes {
 
     private long cumul_activation;
 
-    private long nb_rec;
+    private long cb_30j;
 
-    private long cumul_nb_rec;
+    private long cb_7j;
+
+    private long cb_30jd;
 
     private Double mtt_rec;
 
