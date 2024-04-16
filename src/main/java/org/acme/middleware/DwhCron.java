@@ -1,4 +1,5 @@
 package org.acme.middleware;
+
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -11,7 +12,13 @@ import org.acme.repo.dm_rf.DwhRepo;
 import org.jboss.logging.Logger;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 @ApplicationScoped
 public class DwhCron {
     @Inject
@@ -29,35 +36,52 @@ public class DwhCron {
     @Inject
     DwhRepo dwhRepo;
 
-    @Scheduled(cron = "{cron.expr}")
+    @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
         LocalDate startDate = LocalDate.now().minusDays(2);
         LocalDate endDate = startDate.plusDays(1);
-        String checkData;
-
-        Optional<Kpi> optional = Optional.ofNullable(kpiRepo.getByJour(startDate));
-        if (optional.isEmpty()) {
-            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-
-            if (!dwhResList.isEmpty()) {
-                for (DwhRes dwhRes : dwhResList) {
-                    Kpi kpi = new Kpi(dwhRes);
-                    kpiRepo.save(kpi);
-                }
-                checkData = " chargées.";
-                LOGGER.info("================================ données chargées");
-            } else {
-                checkData = " manquantes.";
-                LOGGER.info("================================ données manquantes");
-            }
-        } else {
-            checkData = " déjà chargées.";
-            LOGGER.info("================================ données déjà chargées");
-        }
         List<User> users = userRepo.findAll().stream().toList();
-        for (User user : users) {
-            mailShared.sendMail(user.getEmail(), endDate, checkData);
+
+        AtomicInteger i = new AtomicInteger();
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        Runnable task = () -> {
+            i.getAndIncrement();
+            boolean check = startCron(startDate, endDate);
+            if (!check || i.get() == 10) {
+                String message;
+                if (i.get() == 10) message = " non chargées après 3 tentatives !";
+                else message = " chargées !";
+                for (User user : users) {
+                    mailShared.sendMail(user.getEmail(), endDate, message);
+                }
+                executor.shutdown();
+                LOGGER.info("Données du " + endDate + message);
+            } else
+                LOGGER.info("Données du " + endDate + " indisponibles !");
+        };
+        executor.scheduleAtFixedRate(task, 0, 3600, TimeUnit.SECONDS);
+    }
+
+    private boolean startCron(LocalDate startDate, LocalDate endDate) {
+        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
+        Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
+        boolean check = false;
+
+        for (LocalDate jour : dwhResListGrouped.keySet()) {
+            check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
+            if (check) break;
         }
-        System.out.println("Cron done!");
+
+        if (!check) {
+            //Remove all data before persist
+            kpiRepo.removeAll(endDate);
+
+            for (DwhRes dwhRes : dwhResList) {
+                Kpi kpi = new Kpi(dwhRes);
+                kpiRepo.save(kpi);
+            }
+        }
+
+        return check;
     }
 }

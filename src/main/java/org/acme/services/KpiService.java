@@ -24,7 +24,11 @@ import org.jboss.logging.Logger;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class KpiService {
@@ -108,31 +112,42 @@ public class KpiService {
     }
 
     public Response getAllDwh(String date) {
-        //Remove all data before persist
-        kpiRepo.removeAll(LocalDate.parse(date));
-
         LocalDate startDate = LocalDate.parse(date).minusDays(1);
         LocalDate endDate = startDate.plusDays(1);
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-        if (!dwhResList.isEmpty()) {
+
+        Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
+        boolean check = false;
+
+        for (LocalDate jour : dwhResListGrouped.keySet()) {
+            check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
+            if (check) break;
+        }
+
+        if (!check) {
+            //Remove all data before persist
+            kpiRepo.removeAll(LocalDate.parse(date));
+
             for (DwhRes dwhRes : dwhResList) {
                 Kpi kpi = new Kpi(dwhRes);
                 kpiRepo.save(kpi);
             }
+        } else {
+            dwhResList = new ArrayList<>();
         }
+
         return Response.ok(dwhResList).build();
     }
 
-    public Response sendSms(String date, String source, String tri) throws UnsupportedEncodingException {
+    public Response sendSms(String date, String tri) throws UnsupportedEncodingException {
         LocalDate startDate = LocalDate.parse(date).minusDays(1);
         LocalDate endDate = startDate.plusDays(1);
         List<Rdz> rdzs = rdzRepo.getAll("");
-//        if (source.equals("app")) {
         List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
         for (Kpi kpi : kpis) {
             String message = "Données du " + kpi.getJour() +
                     " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
-                    "cb 30jours (" + kpi.getCb_30jours() +"), cb 7jours (" + kpi.getCb_7jours() + "), cb 30jours data (" + kpi.getCb_30jours_data() + "), " +
+                    "charged base (" + kpi.getCb_30j() + "taux charged base (" + String.format("%.2f", kpi.getCb_30j() / kpi.getParc()) +
                     "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
                     "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
                     "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
@@ -143,22 +158,6 @@ public class KpiService {
                 }
             }
         }
-//        } else {
-//            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-//            for (DwhRes dwhRes : dwhResList) {
-//                String message = "Données du " + dwhRes.getJour() +
-//                        " : zone (" + dwhRes.getZone() + "), parc (" + dwhRes.getParc() + "), " +
-//                        "act (" + dwhRes.getActivation() + "), cum act (" + dwhRes.getCumul_activation() + "), " +
-//                        "rec (" + dwhRes.getNb_rec() + "), mtt rec (" + dwhRes.getMtt_rec() + "), " +
-//                        "cum rec (" + dwhRes.getCumul_nb_rec() + "), mtt cum rec (" + dwhRes.getCumul_mtt_rec() + ")";
-//                for (Rdz rdz : rdzs) {
-//                    if (dwhRes.getZone().equals(rdz.getZone())) {
-//                        String url = "http://10.249.248.40:80/cgi-bin/smssend?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + rdz.getTel() + "&text=" + URLEncoder.encode(message, "UTF-8");
-//                        httpClientService.get(url);
-//                    }
-//                }
-//            }
-//        }
 
         // Save historic
         User user = userRepo.findByTri(tri);

@@ -7,7 +7,10 @@ import jakarta.inject.Inject;
 import org.acme.model.dm_rf.DwhRes;
 import org.acme.model.dm_rf.Zone;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class DwhRepo {
                 "FROM  DM_OD.od_parc_orange od \n" +
                 "LEFT JOIN DM_RF.rf_customer_group cg ON od.prg_code=cg.prgcode AND cg.type ='Facturable'\n" +
                 "LEFT JOIN DM_RF.`rf_sig_cell_krill_v3` rf ON od.site_id =rf.sig_id\n" +
-                "WHERE upd_dt = '"+endDate+"'\n" +
+                "WHERE upd_dt = '" + endDate + "'\n" +
                 "AND statut IN (1,2,5)\n" +
                 "AND parc_id = 1 \n" +
                 "AND billing_type IN(1,5)\n" +
@@ -75,7 +78,7 @@ public class DwhRepo {
                 "0 cumul_mtt_rec\n" +
                 "FROM  DM_OD.od_parc_orange od \n" +
                 "LEFT JOIN DM_RF.`rf_sig_cell_krill_v3` rf ON od.site_id =rf.sig_id\n" +
-                "WHERE upd_dt = '"+endDate+"'\n" +
+                "WHERE upd_dt = '" + endDate + "'\n" +
                 "AND billing_type IN (1,5)\n" +
                 "AND statut = 1\n" +
                 "GROUP BY upd_dt, zone\n" +
@@ -99,7 +102,7 @@ public class DwhRepo {
                 "0 cumul_mtt_rec\n" +
                 "FROM DM_OD.od_parc_orange od \n" +
                 "LEFT JOIN DM_RF.`rf_sig_cell_krill_v3` rf ON od.site_id =rf.sig_id\n" +
-                "WHERE upd_dt BETWEEN '"+startDate+"' AND '"+endDate+"'\n" +
+                "WHERE upd_dt BETWEEN '" + startDate + "' AND '" + endDate + "'\n" +
                 "AND billing_type IN (1,5)\n" +
                 "AND statut = 1\n" +
                 "GROUP BY mois_annee, zone\n" +
@@ -136,7 +139,7 @@ public class DwhRepo {
                 "INNER JOIN DM_RF.`rf_recharge_code` rc ON rc.code = c.channel_id\n" +
                 "INNER JOIN DM_RF.rf_rec_type rf  ON rf.id = rc.rec_type\n" +
                 "LEFT JOIN DM_RF.rf_sig_cell_krill_v3 sg ON sg.sig_lac_ci=c.cell_id\n" +
-                "WHERE upd_dt = '"+endDate+"' GROUP BY upd_dt, zone\n" +
+                "WHERE upd_dt = '" + endDate + "' GROUP BY upd_dt, zone\n" +
                 ") rec\n" +
                 "\t\n" +
                 "UNION ALL\n" +
@@ -172,7 +175,7 @@ public class DwhRepo {
                 "INNER JOIN DM_RF.`rf_recharge_code` rc ON rc.code = c.channel_id\n" +
                 "INNER JOIN DM_RF.rf_rec_type rf  ON rf.id = rc.rec_type\n" +
                 "LEFT JOIN DM_RF.rf_sig_cell_krill_v3 sg ON sg.sig_lac_ci=c.cell_id\n" +
-                "WHERE upd_dt BETWEEN '"+startDate+"' AND '"+endDate+"'\n" +
+                "WHERE upd_dt BETWEEN '" + startDate + "' AND '" + endDate + "'\n" +
                 "GROUP BY zone \n" +
                 ") cumul_rec\n" +
                 "\n" +
@@ -194,17 +197,17 @@ public class DwhRepo {
                 "0 cumul_mtt_rec\n" +
                 "FROM DM_OD.od_parc_orange od \n" +
                 "LEFT JOIN DM_RF.`rf_sig_cell_krill_v3` rf ON od.site_id =rf.sig_id\n" +
-                "WHERE upd_dt = '"+endDate+"'\n" +
+                "WHERE upd_dt = '" + endDate + "'\n" +
                 "AND statut <> '4'\n" +
                 "AND billing_type = '1'\n" +
                 "GROUP BY \n" +
                 "upd_dt, zone) table_finale\n" +
-                "GROUP BY jour, zone;";
+                "GROUP BY jour, zone";
 
-        try(Connection conn = dataSource.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             List<DwhRes> dwhResList = new ArrayList<>();
-            try(  ResultSet rs = stmt.executeQuery(query)) {
+            try (ResultSet rs = stmt.executeQuery(query)) {
                 while (rs.next()) {
                     DwhRes dwhRes = new DwhRes();
                     dwhRes.setMois_annee(rs.getString("mois_annee"));
@@ -213,9 +216,9 @@ public class DwhRepo {
                     dwhRes.setParc(rs.getLong("parc"));
                     dwhRes.setActivation(rs.getLong("activation"));
                     dwhRes.setCumul_activation(rs.getLong("cumul_activation"));
-                    dwhRes.setCb_30jours(rs.getLong("cb_30j"));
-                    dwhRes.setCb_7jours(rs.getLong("cb_7j"));
-                    dwhRes.setCb_30jours_data(rs.getLong("cb_30jd"));
+                    dwhRes.setCb_30j(rs.getLong("cb_30j"));
+                    dwhRes.setCb_7j(rs.getLong("cb_7j"));
+                    dwhRes.setCb_30jd(rs.getLong("cb_30jd"));
                     dwhRes.setMtt_rec(rs.getDouble("mtt_rec"));
                     dwhRes.setCumul_mtt_rec(rs.getDouble("cumul_mtt_rec"));
                     dwhResList.add(dwhRes);
@@ -230,10 +233,10 @@ public class DwhRepo {
     public List<Zone> getAllZone() {
         String query = "SELECT * FROM DM_RF.rf_sig_zone_v3";
 
-        try(Connection conn = dataSource.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             List<Zone> zoneList = new ArrayList<>();
-            try(  ResultSet rs = stmt.executeQuery(query)) {
+            try (ResultSet rs = stmt.executeQuery(query)) {
                 while (rs.next()) {
                     Zone zone = new Zone();
                     zone.setId(rs.getLong("sig_id_zone"));
