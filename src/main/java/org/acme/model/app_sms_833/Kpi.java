@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.acme.model.dm_rf.DwhRes;
-
 import java.time.LocalDate;
-
 @Getter
 @Setter
 @Entity
@@ -37,26 +35,19 @@ public class Kpi {
     private long cumul_activation;
 
     @Column
-    private long cb_30jours;
+    private long cb_30j;
 
     @Column
-    private long cb_7jours;
+    private long cb_7j;
 
     @Column
-    private long cb_30jours_data;
-
-//    @Column
-//    private long nb_rec;
-//
-//    @Column
-//    private long cumul_nb_rec;
+    private long cb_30jd;
 
     @Column
     private Double mtt_rec;
 
     @Column
     private Double cumul_mtt_rec;
-
     public Kpi(DwhRes dwhRes) {
         this.mois_annee = dwhRes.getMois_annee();
         this.jour = dwhRes.getJour();
@@ -64,12 +55,10 @@ public class Kpi {
         this.parc = dwhRes.getParc();
         this.activation = dwhRes.getActivation();
         this.cumul_activation = dwhRes.getCumul_activation();
-        this.cb_30jours = dwhRes.getCb_30jours();
-        this.cb_7jours = dwhRes.getCb_7jours();
-        this.cb_30jours_data = dwhRes.getCb_30jours_data();
-//        this.nb_rec = dwhRes.getNb_rec();
-//        this.cumul_nb_rec = dwhRes.getCumul_nb_rec();
+        this.cb_30j = dwhRes.getCb_30j();
+        this.cb_7j = dwhRes.getCb_7j();
+        this.cb_30jd = dwhRes.getCb_30jd();
         this.mtt_rec = dwhRes.getMtt_rec();
-        this.cumul_mtt_rec = dwhRes.getMtt_rec();
+        this.cumul_mtt_rec = dwhRes.getCumul_mtt_rec();
     }
 }
