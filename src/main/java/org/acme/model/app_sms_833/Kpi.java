@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.acme.model.dm_rf.DwhRes;
-
 import java.time.LocalDate;
-
 @Getter
 @Setter
 @Entity
@@ -50,7 +48,6 @@ public class Kpi {
 
     @Column
     private Double cumul_mtt_rec;
-
     public Kpi(DwhRes dwhRes) {
         this.mois_annee = dwhRes.getMois_annee();
         this.jour = dwhRes.getJour();
@@ -62,6 +59,6 @@ public class Kpi {
         this.cb_7j = dwhRes.getCb_7j();
         this.cb_30jd = dwhRes.getCb_30jd();
         this.mtt_rec = dwhRes.getMtt_rec();
-        this.cumul_mtt_rec = dwhRes.getMtt_rec();
+        this.cumul_mtt_rec = dwhRes.getCumul_mtt_rec();
     }
 }

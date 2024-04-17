@@ -38,10 +38,11 @@ public class DwhCron {
 
     @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        int dayOfMonth=yesterday.getDayOfMonth();
+        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate endDate=yesterday;
         List<User> users = userRepo.findAll().stream().toList();
-
         AtomicInteger i = new AtomicInteger();
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
@@ -66,7 +67,6 @@ public class DwhCron {
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
-
         for (LocalDate jour : dwhResListGrouped.keySet()) {
             check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
             if (check) break;

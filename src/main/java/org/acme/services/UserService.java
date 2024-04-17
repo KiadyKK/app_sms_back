@@ -42,7 +42,6 @@ public class UserService {
         Optional<User> optional = Optional.ofNullable(user);
         if (optional.isEmpty())
             return Response.status(Response.Status.NOT_FOUND).entity("User Not found. Contact DSI support").build();
-
         if (tri.equals(ADMIN_TRI) && mdp.equals(ADMIN_MDP)) {
             return generateJwt(user);
         } else {
@@ -54,7 +53,7 @@ public class UserService {
             }
         }
     }
-    public Response modifyMdp(PutPasswordReq req){
+    public boolean modifyMdp(PutPasswordReq req){
         String trigramme=req.getTrigramme();
         String mdp=req.getPassword();
         String newMdp=req.getNewPassword();
@@ -62,9 +61,11 @@ public class UserService {
         boolean checkPassword=BCrypt.checkpw(req.getPassword(),user.getMdp());
         if(checkPassword){
             user.setMdp(BCrypt.hashpw(newMdp,BCrypt.gensalt()));
-            return Response.status(200).build();
+            return true;
+           // return Response.status(200).entity("Mot de passe changé avec succès").build();
         }else{
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Password !").build();
+            return false;
+           // return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid Password !").build();
         }
     }
 

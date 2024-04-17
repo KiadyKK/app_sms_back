@@ -18,6 +18,7 @@ public class DwhRes {
 
     private long activation;
 
+
 //    private long cb_30jours;
 //
 //    private long cb_7jours;
