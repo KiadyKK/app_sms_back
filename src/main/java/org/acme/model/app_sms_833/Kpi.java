@@ -62,6 +62,6 @@ public class Kpi {
         this.cb_7j = dwhRes.getCb_7j();
         this.cb_30jd = dwhRes.getCb_30jd();
         this.mtt_rec = dwhRes.getMtt_rec();
-        this.cumul_mtt_rec = dwhRes.getMtt_rec();
+        this.cumul_mtt_rec = dwhRes.getCumul_mtt_rec();
     }
 }
