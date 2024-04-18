@@ -86,8 +86,12 @@ public class KpiService {
 //            checkData = " déjà chargées.";
 //            LOGGER.info("================================ données déjà chargées");
 //        }
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
+//        LocalDate startDate = LocalDate.now().minusDays(2);
+//        LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        int dayOfMonth=yesterday.getDayOfMonth();
+        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate endDate=yesterday;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         return Response.ok(dwhResList).build();
     }
@@ -112,8 +116,12 @@ public class KpiService {
     }
 
     public Response getAllDwh(String date) {
-        LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        LocalDate endDate = startDate.plusDays(1);
+        //LocalDate startDate = LocalDate.parse(date).minusDays(1);
+        //LocalDate endDate = startDate.plusDays(1);
+        LocalDate day=LocalDate.parse(date);
+        int dayOfMonth=day.getDayOfMonth();
+        LocalDate startDate=day.minusDays(dayOfMonth-1);
+        LocalDate endDate=day;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
 
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));

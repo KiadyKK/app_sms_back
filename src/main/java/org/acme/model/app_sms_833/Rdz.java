@@ -1,5 +1,4 @@
 package org.acme.model.app_sms_833;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,7 @@ import org.acme.requests.AddRdzReq;
 @Entity
 @NoArgsConstructor
 @Table(name = "rdz")
-public class Rdz {
+public class Rdz  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
