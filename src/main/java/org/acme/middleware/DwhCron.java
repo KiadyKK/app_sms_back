@@ -39,8 +39,7 @@ public class DwhCron {
     @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
         LocalDate yesterday=LocalDate.now().minusDays(1);
-        int dayOfMonth=yesterday.getDayOfMonth();
-        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate startDate=yesterday.withDayOfMonth(1);
         LocalDate endDate=yesterday;
         List<User> users = userRepo.findAll().stream().toList();
         AtomicInteger i = new AtomicInteger();

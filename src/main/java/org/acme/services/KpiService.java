@@ -20,7 +20,6 @@ import org.acme.repo.dm_rf.DwhRepo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -28,6 +27,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -89,8 +89,7 @@ public class KpiService {
 //        LocalDate startDate = LocalDate.now().minusDays(2);
 //        LocalDate endDate = startDate.plusDays(1);
         LocalDate yesterday=LocalDate.now().minusDays(1);
-        int dayOfMonth=yesterday.getDayOfMonth();
-        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate startDate=yesterday.withDayOfMonth(1);
         LocalDate endDate=yesterday;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         return Response.ok(dwhResList).build();
@@ -116,14 +115,10 @@ public class KpiService {
     }
 
     public Response getAllDwh(String date) {
-        //LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        //LocalDate endDate = startDate.plusDays(1);
         LocalDate day=LocalDate.parse(date);
-        int dayOfMonth=day.getDayOfMonth();
-        LocalDate startDate=day.minusDays(dayOfMonth-1);
+        LocalDate startDate=day.withDayOfMonth(1);
         LocalDate endDate=day;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
 
@@ -148,12 +143,18 @@ public class KpiService {
     }
 
     public Response sendSms(String date, String tri) throws UnsupportedEncodingException {
-        LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        LocalDate startDate=yesterday.withDayOfMonth(1);
+        LocalDate endDate=yesterday;
         List<Rdz> rdzs = rdzRepo.getAll("");
         List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
         for (Kpi kpi : kpis) {
-            String message = getString(kpi);
+            String message = "Données du " + kpi.getJour() +
+                    " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
+                    "charged base (" + kpi.getCb_30j() + "taux charged base (" + String.format("%.2f", (kpi.getCb_30j() / kpi.getParc())*100) +
+                    "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
+                    "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
+                    "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
             for (Rdz rdz : rdzs) {
                 if (kpi.getZone().equals(rdz.getZone())) {
                     String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + rdz.getTel() + "&text=" + URLEncoder.encode(message, "UTF-8");
@@ -167,20 +168,6 @@ public class KpiService {
         Historic historic = new Historic(endDate, user);
         historicRepo.save(historic);
         return Response.ok().build();
-    }
-
-    @NotNull
-    private static String getString(Kpi kpi) {
-        final long a = kpi.getCb_30j();
-        final long b = kpi.getParc();
-        final double c = ((double) a / b) * 100;
-        String message = "Données du " + kpi.getJour() +
-                " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
-                "charged base (" + kpi.getCb_30j() + "), taux charged base (" + String.format("%.2f", c) + "), " +
-                "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
-                "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
-                "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
-        return message;
     }
 
     public Response getZone() {
