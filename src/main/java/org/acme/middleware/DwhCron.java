@@ -50,7 +50,7 @@ public class DwhCron {
             boolean check = startCron(startDate, endDate);
             if (!check || i.get() == 10) {
                 String message;
-                if (i.get() == 10) message = " non chargées après 3 tentatives !";
+                if (i.get() == 10) message = " non chargées après 10 tentatives !";
                 else message = " chargées !";
                 for (User user : users) {
                     mailShared.sendMail(user.getEmail(), endDate, message);
