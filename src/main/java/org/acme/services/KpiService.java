@@ -112,8 +112,12 @@ public class KpiService {
     }
 
     public Response getAllDwh(String date) {
-        LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        LocalDate endDate = startDate.plusDays(1);
+        //LocalDate startDate = LocalDate.parse(date).minusDays(1);
+        //LocalDate endDate = startDate.plusDays(1);
+        LocalDate day=LocalDate.parse(date);
+        int dayOfMonth=day.getDayOfMonth();
+        LocalDate startDate=day.minusDays(dayOfMonth-1);
+        LocalDate endDate=day;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
 
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
