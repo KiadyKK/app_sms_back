@@ -86,8 +86,12 @@ public class KpiService {
 //            checkData = " déjà chargées.";
 //            LOGGER.info("================================ données déjà chargées");
 //        }
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
+//        LocalDate startDate = LocalDate.now().minusDays(2);
+//        LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        int dayOfMonth=yesterday.getDayOfMonth();
+        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate endDate=yesterday;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         return Response.ok(dwhResList).build();
     }
@@ -144,14 +148,18 @@ public class KpiService {
     }
 
     public Response sendSms(String date, String tri) throws UnsupportedEncodingException {
-        LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        LocalDate endDate = startDate.plusDays(1);
+       // LocalDate startDate = LocalDate.parse(date).minusDays(1);
+       // LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        int dayOfMonth=yesterday.getDayOfMonth();
+        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate endDate=yesterday;
         List<Rdz> rdzs = rdzRepo.getAll("");
         List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
         for (Kpi kpi : kpis) {
             String message = "Données du " + kpi.getJour() +
                     " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
-                    "charged base (" + kpi.getCb_30j() + "taux charged base (" + String.format("%.2f", kpi.getCb_30j() / kpi.getParc()) +
+                    "charged base (" + kpi.getCb_30j() + "taux charged base (" + String.format("%.2f", (kpi.getCb_30j() / kpi.getParc())*100) +
                     "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
                     "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
                     "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
