@@ -86,8 +86,12 @@ public class KpiService {
 //            checkData = " déjà chargées.";
 //            LOGGER.info("================================ données déjà chargées");
 //        }
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
+//        LocalDate startDate = LocalDate.now().minusDays(2);
+//        LocalDate endDate = startDate.plusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        int dayOfMonth=yesterday.getDayOfMonth();
+        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate endDate=yesterday;
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         return Response.ok(dwhResList).build();
     }
