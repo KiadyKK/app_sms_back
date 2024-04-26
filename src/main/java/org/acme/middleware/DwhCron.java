@@ -39,8 +39,7 @@ public class DwhCron {
     @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
         LocalDate yesterday=LocalDate.now().minusDays(1);
-        int dayOfMonth=yesterday.getDayOfMonth();
-        LocalDate startDate=yesterday.minusDays(dayOfMonth-1);
+        LocalDate startDate=yesterday.withDayOfMonth(1);
         LocalDate endDate=yesterday;
         List<User> users = userRepo.findAll().stream().toList();
         AtomicInteger i = new AtomicInteger();
@@ -50,7 +49,7 @@ public class DwhCron {
             boolean check = startCron(startDate, endDate);
             if (!check || i.get() == 10) {
                 String message;
-                if (i.get() == 10) message = " non chargées après 3 tentatives !";
+                if (i.get() == 10) message = " non chargées après 10 tentatives !";
                 else message = " chargées !";
                 for (User user : users) {
                     mailShared.sendMail(user.getEmail(), endDate, message);
