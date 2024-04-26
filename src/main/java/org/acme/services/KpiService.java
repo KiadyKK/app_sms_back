@@ -121,7 +121,6 @@ public class KpiService {
         List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
-
         for (LocalDate jour : dwhResListGrouped.keySet()) {
             check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
             if (check) break;

@@ -234,7 +234,7 @@ public class DwhRepo {
                 "\tFROM(\n" +
                 "\t\tSELECT \n" +
                 "\t\t\t"+ endDate +" upd_dt, \n" +
-                "\t\t\tSUM(IF(upd_dt='2024-04-23',qty,0)) qty_j_1 ,\n" +
+                "\t\t\tSUM(IF(upd_dt='"+endDate+"',qty,0)) qty_j_1 ,\n" +
                 "\t\t\tSUM(IF(upd_dt=DATE_SUB('"+ endDate +"', INTERVAL 1 DAY),qty,0)) qty_j_2, \n" +
                 "\t\t\tIF(v3.sig_zoneorange_name_v3 IS NULL,'INCONNU',v3.sig_zoneorange_name_v3) zone,\n" +
                 "\t\t\tSUM(IF(upd_dt='"+ endDate +"',qty,0))-SUM(IF(upd_dt=DATE_SUB('"+ endDate +"', INTERVAL 1 DAY),qty,0)) delta\n" +
