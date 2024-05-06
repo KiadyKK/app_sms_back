@@ -38,32 +38,31 @@ public class DwhCron {
 
     @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
+        LocalDate date = LocalDate.now().minusDays(1);
         List<User> users = userRepo.findAll().stream().toList();
 
         AtomicInteger i = new AtomicInteger();
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
             i.getAndIncrement();
-            boolean check = startCron(startDate, endDate);
+            boolean check = startCron(date);
             if (!check || i.get() == 10) {
                 String message;
                 if (i.get() == 10) message = " non chargées après 10 tentatives !";
                 else message = " chargées !";
                 for (User user : users) {
-                    mailShared.sendMail(user.getEmail(), endDate, message);
+                    mailShared.sendMail(user.getEmail(), date, message);
                 }
                 executor.shutdown();
-                LOGGER.info("Données du " + endDate + message);
+                LOGGER.info("Données du " + date + message);
             } else
-                LOGGER.info("Données du " + endDate + " indisponibles !");
+                LOGGER.info("Données du " + date + " indisponibles !");
         };
         executor.scheduleAtFixedRate(task, 0, 3600, TimeUnit.SECONDS);
     }
 
-    private boolean startCron(LocalDate startDate, LocalDate endDate) {
-        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
+    private boolean startCron(LocalDate date) {
+        List<DwhRes> dwhResList = dwhRepo.getAll(date);
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
 
@@ -74,7 +73,7 @@ public class DwhCron {
 
         if (!check) {
             //Remove all data before persist
-            kpiRepo.removeAll(endDate);
+            kpiRepo.removeAll(date);
 
             for (DwhRes dwhRes : dwhResList) {
                 Kpi kpi = new Kpi(dwhRes);

@@ -16,6 +16,8 @@ public class DwhRes {
 
     private long parc;
 
+    private long delta_parc;
+
     private long activation;
 
     private long cb_30jours;

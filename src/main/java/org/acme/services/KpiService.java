@@ -62,46 +62,12 @@ public class KpiService {
     @Inject
     HttpClientService httpClientService;
 
-    public Response getDwh() {
-//        LocalDate startDate = LocalDate.now().minusDays(1);
-//        LocalDate endDate = startDate.plusDays(1);
-//        String checkData;
-//
-//        Optional<Kpi> optional = Optional.ofNullable(kpiRepo.getByJour(startDate));
-//        if (optional.isEmpty()) {
-//            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-//
-//            if (!dwhResList.isEmpty()) {
-//                for (DwhRes dwhRes : dwhResList) {
-//                    Kpi kpi = new Kpi(dwhRes);
-//                    kpiRepo.save(kpi);
-//                }
-//                checkData = " chargées.";
-//                LOGGER.info("================================ données chargées");
-//            } else {
-//                checkData = " manquantes.";
-//                LOGGER.info("================================ données manquantes");
-//            }
-//        } else {
-//            checkData = " déjà chargées.";
-//            LOGGER.info("================================ données déjà chargées");
-//        }
-        LocalDate startDate = LocalDate.now().minusDays(2);
-        LocalDate endDate = startDate.plusDays(1);
-        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-        return Response.ok(dwhResList).build();
-    }
+    public Response testSms(String msisdn) throws UnsupportedEncodingException {
+        Kpi kpi = kpiRepo.listAll().stream().findFirst().get();
+        String message = getString(kpi);
 
-    public Response testSms(String msisdn) {
-        String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=Sms833&to=" + msisdn + "&text=test+app+sms+833";
-        String res = httpClientService.get(url);
-        System.out.println("=====================>" + res);
-
-//        HttpClient client = HttpClientBuilder.create().build();
-//        HttpGet request = new HttpGet(url);
-//        HttpResponse response = client.execute(request);
-//        String responseBody = EntityUtils.toString(response.getEntity());
-//        System.out.println("=====================>" + responseBody);
+        String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + msisdn + "&text=" + URLEncoder.encode(message, "UTF-8");
+        httpClientService.get(url);
 
         return Response.noContent().build();
     }
@@ -111,10 +77,9 @@ public class KpiService {
         return Response.ok(kpis).build();
     }
 
-    public Response getAllDwh(String date) {
-        LocalDate startDate = LocalDate.parse(date).minusDays(1);
-        LocalDate endDate = startDate.plusDays(1);
-        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
+    public Response getAllDwh(String searchDate) {
+        LocalDate date = LocalDate.parse(searchDate);
+        List<DwhRes> dwhResList = dwhRepo.getAll(date);
 
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
@@ -126,7 +91,7 @@ public class KpiService {
 
         if (!check) {
             //Remove all data before persist
-            kpiRepo.removeAll(LocalDate.parse(date));
+            kpiRepo.removeAll(date);
 
             for (DwhRes dwhRes : dwhResList) {
                 Kpi kpi = new Kpi(dwhRes);
@@ -167,11 +132,11 @@ public class KpiService {
         final long b = kpi.getParc();
         final double c = ((double) a / b) * 100;
         String message = "Données du " + kpi.getJour() +
-                " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
+                " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), delta parc (" + kpi.getDelta_parc() + "), " +
                 "charged base (" + kpi.getCb_30j() + "), taux charged base (" + String.format("%.2f", c) + "), " +
                 "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
-                "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
-                "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
+                "mtt rec (" + (int) kpi.getMtt_rec().doubleValue() + "), " +
+                "mtt cum rec (" + (int) kpi.getCumul_mtt_rec().doubleValue() + ")";
         return message;
     }
 

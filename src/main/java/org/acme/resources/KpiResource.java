@@ -24,16 +24,8 @@ public class KpiResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("cron")
-    public Response getDwh() {
-        return kpiService.getDwh();
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("test-sms/{msisdn}")
-    public Response testJson(@PathParam("msisdn") String msisdn) {
+    public Response testJson(@PathParam("msisdn") String msisdn) throws UnsupportedEncodingException {
         return kpiService.testSms(msisdn);
     }
 

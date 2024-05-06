@@ -31,6 +31,9 @@ public class Kpi {
     private long parc;
 
     @Column
+    private long delta_parc;
+
+    @Column
     private long activation;
 
     @Column
@@ -56,6 +59,7 @@ public class Kpi {
         this.jour = dwhRes.getJour();
         this.zone = dwhRes.getZone();
         this.parc = dwhRes.getParc();
+        this.delta_parc = dwhRes.getDelta_parc();
         this.activation = dwhRes.getActivation();
         this.cumul_activation = dwhRes.getCumul_activation();
         this.cb_30j = dwhRes.getCb_30j();
