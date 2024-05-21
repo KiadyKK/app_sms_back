@@ -9,11 +9,12 @@ import org.acme.requests.AddRdzReq;
 import org.acme.services.RdzService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 @QuarkusTest
 public class RdzServiceTest {
  @InjectMock
@@ -25,6 +26,7 @@ public class RdzServiceTest {
  private List<Rdz> listMock;
 @BeforeEach
 public void setup(){
+    Mockito.reset(rdzRepo);
     AddRdzReq addRdzReq=new AddRdzReq();
     listMock=new ArrayList<>();
     addRdzReq.setEmail("rak@gmail.com");
@@ -35,7 +37,7 @@ public void setup(){
     addRdzReq.setTri("iol");
     addRdzReq.setZone("Alaotra");
     rdz1=new Rdz(addRdzReq);
-     rdzRepo.persist(rdz1);
+     //rdzRepo.persist(rdz1);
     AddRdzReq addRdzReq1=new AddRdzReq();
     addRdzReq1.setEmail("rakoto@gmail.com");
     addRdzReq1.setIdZone(1);
@@ -45,11 +47,9 @@ public void setup(){
     addRdzReq1.setTri("dny");
     addRdzReq1.setZone("Alaotra");
     rdz2=new Rdz(addRdzReq1);
-    rdzRepo.persist(rdz2);
-  //  List<Rdz> rdzList=new ArrayList<>();
+    //rdzRepo.persist(rdz2);
     listMock.add(rdz1);
     listMock.add(rdz2);
-    //Mockito.when(Mockito.mock(rdzRepo.getAll(""))).thenReturn(rdzList);
     when(rdzRepo.getAll("")).thenReturn(listMock);
 }
  @Test
@@ -65,5 +65,30 @@ public void setup(){
     assertEquals("dny",entity.get(1).getTri());
  }
 
-}
+ @Test
+ void addRdzTest(){
+    AddRdzReq req=new AddRdzReq();
+    req.setEmail("rakoto@gmail.com");
+    req.setIdZone(1);
+    req.setNom("RAKOTOVAO");
+    req.setPrenom("Michelle");
+    req.setTel("0345415027");
+    req.setTri("iol");
+    req.setZone("Alaotra");
+    Rdz rdz=new Rdz(req);
+    doNothing().when(rdzRepo).persist(any(Rdz.class));
+    Response response=rdzService.addRdz(req);
+    assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+    assertNotNull(response);
+    assertNotNull(response.getEntity());
 
+    Rdz entity=(Rdz) response.getEntity();
+    assertEquals(rdz.getPrenom(),entity.getPrenom());
+    assertEquals(rdz.getNom(),entity.getNom());
+    assertEquals(rdz.getTri(),entity.getTri());
+    assertEquals(rdz.getEmail(),entity.getEmail());
+    assertEquals(rdz.getZone(),entity.getZone());
+    assertEquals(rdz.getTel(),entity.getTel());
+    verify(rdzRepo).persist(any(Rdz.class));
+ }
+}
