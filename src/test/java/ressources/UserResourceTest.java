@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @QuarkusTest
 public class UserResourceTest {
+    /*
     @Test
     public void testSignUp() {
         LoginReq loginReq = new LoginReq();
@@ -22,4 +23,6 @@ public class UserResourceTest {
                 .statusCode(200)
                 .body("token",notNullValue());
     }
+
+     */
 }

@@ -9,34 +9,35 @@ import org.acme.requests.AddRdzReq;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "rdz")
+@Table(name = "\"rdz\"")
 public class Rdz  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id")
     private long id;
 
-    @Column
+    @Column(name="tri")
     private String tri;
 
-    @Column
+    @Column(name="nom")
     private String nom;
 
-    @Column
+    @Column(name="prenom")
     private String prenom;
 
-    @Column
+    @Column(name="tel")
     private String tel;
 
-    @Column
+    @Column(name="email")
     private String email;
 
-    @Column
+    @Column(name="status")
     private int status;
 
-    @Column
+    @Column(name="idZone")
     private long idZone;
 
-    @Column
+    @Column(name="zone")
     private String zone;
 
     public Rdz(AddRdzReq req) {

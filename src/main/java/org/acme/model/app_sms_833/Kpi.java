@@ -10,43 +10,44 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "kpi")
+@Table(name = "\"kpi\"")
 public class Kpi {
     @Id
+    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(name="mois_annee")
     private String mois_annee;
 
-    @Column
+    @Column(name="jour")
     private LocalDate jour;
 
-    @Column
+    @Column(name="zone")
     private String zone;
 
-    @Column
+    @Column(name="parc")
     private long parc;
 
-    @Column
+    @Column(name="activation")
     private long activation;
 
-    @Column
+    @Column(name="cumul_activation")
     private long cumul_activation;
 
-    @Column
+    @Column(name="cb_30j")
     private long cb_30j;
 
-    @Column
+    @Column(name="cb_7j")
     private long cb_7j;
 
-    @Column
+    @Column(name="cb_30jd")
     private long cb_30jd;
 
-    @Column
+    @Column(name="mtt_rec")
     private Double mtt_rec;
 
-    @Column
+    @Column(name="cumul_mtt_rec")
     private Double cumul_mtt_rec;
     public Kpi(DwhRes dwhRes) {
         this.mois_annee = dwhRes.getMois_annee();

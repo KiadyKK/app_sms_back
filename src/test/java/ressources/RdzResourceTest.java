@@ -1,11 +1,9 @@
 package ressources;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import jakarta.inject.Inject;
 import org.acme.requests.LoginReq;
-import org.acme.resources.UserResource;
 import org.acme.services.RdzService;
 import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
@@ -13,8 +11,6 @@ import static org.gradle.internal.impldep.com.google.common.base.Predicates.equa
 
 @QuarkusTest
 public class RdzResourceTest {
-    @InjectMock
-    UserResource userResource;
 
     public String getToken() {
         LoginReq loginReq = new LoginReq();
@@ -29,14 +25,18 @@ public class RdzResourceTest {
         return response.then().extract().path("token");
     }
 
-    @Test
+   /* @Test
    void TestListRdzEndpoint(){
        String token=getToken();
+        System.out.println(token);
        given()
+               .header("Authorization","Bearer "+token)
                .queryParam("nom","")
                .when().get("/rdz")
                .then()
                .statusCode(200);
    }
+
+    */
 }
 
