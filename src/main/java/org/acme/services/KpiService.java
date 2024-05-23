@@ -1,5 +1,4 @@
 package org.acme.services;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
@@ -20,98 +19,65 @@ import org.acme.repo.dm_rf.DwhRepo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 @ApplicationScoped
 public class KpiService {
     @ConfigProperty(name = "app.name")
     private String APP_NAME;
-
     @Inject
     Logger LOGGER;
-
     @Inject
     MailShared mailShared;
-
     @Inject
     UserRepo userRepo;
-
     @Inject
     RdzRepo rdzRepo;
-
     @Inject
     KpiRepo kpiRepo;
-
     @Inject
     HistoricRepo historicRepo;
-
     @Inject
     DwhRepo dwhRepo;
-
     @RestClient
     SmsProxy smsProxy;
-
     @Inject
     HttpClientService httpClientService;
-
     public Response getDwh() {
-//        LocalDate startDate = LocalDate.now().minusDays(1);
-//        LocalDate endDate = startDate.plusDays(1);
-//        String checkData;
-//
-//        Optional<Kpi> optional = Optional.ofNullable(kpiRepo.getByJour(startDate));
-//        if (optional.isEmpty()) {
-//            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-//
-//            if (!dwhResList.isEmpty()) {
-//                for (DwhRes dwhRes : dwhResList) {
-//                    Kpi kpi = new Kpi(dwhRes);
-//                    kpiRepo.save(kpi);
-//                }
-//                checkData = " chargées.";
-//                LOGGER.info("================================ données chargées");
-//            } else {
-//                checkData = " manquantes.";
-//                LOGGER.info("================================ données manquantes");
-//            }
-//        } else {
-//            checkData = " déjà chargées.";
-//            LOGGER.info("================================ données déjà chargées");
-//        }
-//        LocalDate startDate = LocalDate.now().minusDays(2);
-//        LocalDate endDate = startDate.plusDays(1);
-        LocalDate yesterday=LocalDate.now().minusDays(1);
-        LocalDate startDate=yesterday.withDayOfMonth(1);
-        LocalDate endDate=yesterday;
-        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-        return Response.ok(dwhResList).build();
+        try{
+            LocalDate yesterday=LocalDate.now().minusDays(1);
+            LocalDate startDate=yesterday.withDayOfMonth(1);
+            LocalDate endDate=yesterday;
+            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
+            return Response.ok(dwhResList).build();
+        }catch(Exception e){
+            return Response.serverError().build();
+        }
     }
 
     public Response testSms(String msisdn) {
-        String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=Sms833&to=" + msisdn + "&text=test+app+sms+833";
-        String res = httpClientService.get(url);
-        System.out.println("=====================>" + res);
-
-//        HttpClient client = HttpClientBuilder.create().build();
-//        HttpGet request = new HttpGet(url);
-//        HttpResponse response = client.execute(request);
-//        String responseBody = EntityUtils.toString(response.getEntity());
-//        System.out.println("=====================>" + responseBody);
-
-        return Response.noContent().build();
+        try{
+            String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=Sms833&to=" + msisdn + "&text=test+app+sms+833";
+            String res = httpClientService.get(url);
+            System.out.println("=====================>" + res);
+            return Response.noContent().build();
+        }catch (Exception e){
+            return Response.serverError().build();
+        }
     }
 
     public Response getAll(String date) {
-        List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
-        return Response.ok(kpis).build();
+        try{
+            List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
+            return Response.ok(kpis).build();
+        }catch (Exception e){
+            return Response.serverError().build();
+        }
     }
 
     public Response getAllDwh(String date) {
@@ -125,7 +91,6 @@ public class KpiService {
             check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
             if (check) break;
         }
-
         if (!check) {
             //Remove all data before persist
             kpiRepo.removeAll(LocalDate.parse(date));
@@ -137,10 +102,17 @@ public class KpiService {
         } else {
             dwhResList = new ArrayList<>();
         }
-
         return Response.ok(dwhResList).build();
     }
-
+    public Response saveHistoric(LocalDate endDate,User user){
+        try{
+            Historic historic=new Historic(endDate,user);
+            historicRepo.save(historic);
+            return Response.ok().build();
+        }catch (Exception e){
+            return Response.serverError().build();
+        }
+    }
     public Response sendSms(String date, String tri) throws UnsupportedEncodingException {
         LocalDate yesterday=LocalDate.now().minusDays(1);
         LocalDate startDate=yesterday.withDayOfMonth(1);
@@ -161,21 +133,25 @@ public class KpiService {
                 }
             }
         }
-
         // Save historic
         User user = userRepo.findByTri(tri);
-        Historic historic = new Historic(endDate, user);
-        historicRepo.save(historic);
-        return Response.ok().build();
+        return saveHistoric(endDate,user);
     }
 
     public Response getZone() {
-        List<Zone> zones = dwhRepo.getAllZone();
-        return Response.ok(zones).build();
+        try{
+            List<Zone> zones = dwhRepo.getAllZone();
+            return Response.ok(zones).build();
+        }catch(Exception e){
+            return Response.serverError().build();
+        }
     }
-
     public Response getHistoric(String date) {
-        List<Historic> historics = historicRepo.getAll(LocalDate.parse(date));
-        return Response.ok(historics).build();
+        try{
+            List<Historic> historics = historicRepo.getAll(LocalDate.parse(date));
+            return Response.ok(historics).build();
+        }catch(Exception e){
+            return Response.serverError().build();
+        }
     }
 }

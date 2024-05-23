@@ -37,7 +37,6 @@ public void setup(){
     addRdzReq.setTri("iol");
     addRdzReq.setZone("Alaotra");
     rdz1=new Rdz(addRdzReq);
-     //rdzRepo.persist(rdz1);
     AddRdzReq addRdzReq1=new AddRdzReq();
     addRdzReq1.setEmail("rakoto@gmail.com");
     addRdzReq1.setIdZone(1);
@@ -47,7 +46,6 @@ public void setup(){
     addRdzReq1.setTri("dny");
     addRdzReq1.setZone("Alaotra");
     rdz2=new Rdz(addRdzReq1);
-    //rdzRepo.persist(rdz2);
     listMock.add(rdz1);
     listMock.add(rdz2);
     when(rdzRepo.getAll("")).thenReturn(listMock);
@@ -91,4 +89,24 @@ public void setup(){
     assertEquals(rdz.getTel(),entity.getTel());
     verify(rdzRepo).persist(any(Rdz.class));
  }
+
+    @Test
+    void deleteRdz() {
+        long idToDelete = 1L;
+        AddRdzReq req = new AddRdzReq();
+        req.setEmail("rak@gmail.com");
+        req.setIdZone(1);
+        req.setNom("Michelle");
+        req.setPrenom("Rakoto");
+        req.setTel("0989876479");
+        req.setTri("iol");
+        req.setZone("Alaotra");
+        rdz1 = new Rdz(req);
+        rdz1.setId(idToDelete);
+
+        when(rdzRepo.remove(idToDelete)).thenReturn(rdz1.getStatus());
+        Response response = rdzService.delete(idToDelete);
+        verify(rdzRepo, times(1)).remove(idToDelete);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    }
 }
