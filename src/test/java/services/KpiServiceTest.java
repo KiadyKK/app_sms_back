@@ -255,5 +255,16 @@ public class KpiServiceTest {
         Mockito.verify(userRepo).findByTri(anyString());
         Mockito.verify(httpClientService,times(2)).get(anyString());
     }
+    @Test
+    void sendSmsTestException() throws Exception {
+        Mockito.when(rdzRepo.getAll(anyString())).thenReturn(rdzs);
+        Mockito.when(kpiRepo.getAll(LocalDate.parse("2018-08-01"))).thenReturn(kpis);
+        Mockito.when(userRepo.findByTri(anyString())).thenReturn(user);
+        Mockito.when(httpClientService.get(anyString())).thenThrow(new RuntimeException());
+
+        Response response=kpiService.sendSms("2018-08-01","iol");
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+    }
 }
 
