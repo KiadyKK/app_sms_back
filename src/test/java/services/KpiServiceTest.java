@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 
 @QuarkusTest
@@ -59,6 +60,7 @@ public class KpiServiceTest {
     private static List<Kpi> kpis;
     private static List<Rdz> rdzs;
     private static User user;
+    private static Historic historic;
     @BeforeEach
     void setup(){
         Zone zone=Mockito.mock(Zone.class);
@@ -70,7 +72,7 @@ public class KpiServiceTest {
         date=LocalDate.parse("2018-08-01");
         sendDate=LocalDate.parse("2018-08-24");
 
-        Historic historic=Mockito.mock(Historic.class);
+        historic=Mockito.mock(Historic.class);
         Mockito.when(historic.getId()).thenReturn(1L);
         Mockito.when(historic.getIdUser()).thenReturn(1L);
         Mockito.when(historic.getKpiDate()).thenReturn(date);
@@ -83,8 +85,8 @@ public class KpiServiceTest {
         DwhRes dwhRes2=Mockito.mock(DwhRes.class);
         Mockito.when(dwhRes1.getZone()).thenReturn("Alaotra");
         Mockito.when(dwhRes1.getActivation()).thenReturn(1L);
-        Mockito.when(dwhRes1.getJour()).thenReturn(LocalDate.parse("2018-08-01"));
-        Mockito.when(dwhRes1.getMois_annee()).thenReturn("08-01");
+        Mockito.when(dwhRes1.getJour()).thenReturn(LocalDate.parse("2024-05-25"));
+        Mockito.when(dwhRes1.getMois_annee()).thenReturn("05-25");
         Mockito.when(dwhRes1.getParc()).thenReturn(2L);
         Mockito.when(dwhRes1.getMtt_rec()).thenReturn(3.7);
         Mockito.when(dwhRes1.getCumul_mtt_rec()).thenReturn(56.9);
@@ -95,8 +97,8 @@ public class KpiServiceTest {
 
         Mockito.when(dwhRes2.getZone()).thenReturn("Itasy");
         Mockito.when(dwhRes2.getActivation()).thenReturn(2L);
-        Mockito.when(dwhRes2.getJour()).thenReturn(LocalDate.parse("2018-08-04"));
-        Mockito.when(dwhRes2.getMois_annee()).thenReturn("08-04");
+        Mockito.when(dwhRes2.getJour()).thenReturn(LocalDate.parse("2024-05-25"));
+        Mockito.when(dwhRes2.getMois_annee()).thenReturn("05-25");
         Mockito.when(dwhRes2.getParc()).thenReturn(98L);
         Mockito.when(dwhRes2.getMtt_rec()).thenReturn(9.7);
         Mockito.when(dwhRes2.getCumul_mtt_rec()).thenReturn(73.9);
@@ -266,5 +268,34 @@ public class KpiServiceTest {
         assertNotNull(response);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
     }
+    @Test
+    void saveHistoric(){
+        //doNothing().when(historicRepo.save(historic));
+        doNothing().when(historicRepo).save(any(Historic.class));
+        Response response=kpiService.saveHistoric(LocalDate.now(),user);
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+        Mockito.verify(historicRepo).save(any(Historic.class));
+    }
+    @Test
+    void getAllDwhWithOkResponse(){
+        LocalDate date=LocalDate.of(2024,05,25);
+        LocalDate startDate=date.withDayOfMonth(1);
+        LocalDate endDate=date;
+
+        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenReturn(dwhResList);
+        Mockito.when(kpiRepo.removeAll(any(LocalDate.class))).thenReturn(6L);
+        doNothing().when(kpiRepo).save(any(Kpi.class));
+
+        Response response=kpiService.getAllDwh(date.toString());
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        List<DwhRes> returnedDwhResList = (List<DwhRes>) response.getEntity();
+        assertEquals(2, returnedDwhResList.size());
+        Mockito.verify(dwhRepo).getAll(startDate, endDate);
+        Mockito.verify(kpiRepo).removeAll(date);
+        Mockito.verify(kpiRepo, times(2)).save(any(Kpi.class));
+    }
 }
+
 

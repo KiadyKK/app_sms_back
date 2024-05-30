@@ -150,7 +150,7 @@ public class KpiService {
             logger.info("User fetched: " + user.getTri());
             return saveHistoric(endDate,user);
         }catch (Exception e){
-            logger.error("Error occurred in sendSms: ", e);
+            logger.error("Error occurred in sendSms: ");
             return Response.serverError().build();
         }
     }
