@@ -48,6 +48,7 @@ public class KpiService {
     SmsProxy smsProxy;
     @Inject
     HttpClientService httpClientService;
+    private static final Logger logger = Logger.getLogger(KpiService.class);
     public Response getDwh() {
         try{
             LocalDate yesterday=LocalDate.now().minusDays(1);
@@ -60,7 +61,7 @@ public class KpiService {
         }
     }
 
-    public Response testSms(String msisdn) {
+    public Response testSms(String msisdn){
         try{
             String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=Sms833&to=" + msisdn + "&text=test+app+sms+833";
             String res = httpClientService.get(url);
@@ -84,25 +85,30 @@ public class KpiService {
         LocalDate day=LocalDate.parse(date);
         LocalDate startDate=day.withDayOfMonth(1);
         LocalDate endDate=day;
-        List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
-        Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
-        boolean check = false;
-        for (LocalDate jour : dwhResListGrouped.keySet()) {
-            check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
-            if (check) break;
-        }
-        if (!check) {
-            //Remove all data before persist
-            kpiRepo.removeAll(LocalDate.parse(date));
-
-            for (DwhRes dwhRes : dwhResList) {
-                Kpi kpi = new Kpi(dwhRes);
-                kpiRepo.save(kpi);
+        try{
+            List<DwhRes> dwhResList = dwhRepo.getAll(startDate, endDate);
+            Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
+            boolean check = false;
+            for (LocalDate jour : dwhResListGrouped.keySet()) {
+                check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
+                if (check) break;
             }
-        } else {
-            dwhResList = new ArrayList<>();
+            if (!check) {
+                //Remove all data before persist
+                kpiRepo.removeAll(LocalDate.parse(date));
+
+                for (DwhRes dwhRes : dwhResList) {
+                    Kpi kpi = new Kpi(dwhRes);
+                    kpiRepo.save(kpi);
+                }
+            } else {
+                dwhResList = new ArrayList<>();
+            }
+            return Response.ok(dwhResList).build();
+        }catch (Exception e){
+            return Response.serverError().build();
         }
-        return Response.ok(dwhResList).build();
+
     }
     public Response saveHistoric(LocalDate endDate,User user){
         try{
@@ -117,25 +123,36 @@ public class KpiService {
         LocalDate yesterday=LocalDate.now().minusDays(1);
         LocalDate startDate=yesterday.withDayOfMonth(1);
         LocalDate endDate=yesterday;
-        List<Rdz> rdzs = rdzRepo.getAll("");
-        List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
-        for (Kpi kpi : kpis) {
-            String message = "Données du " + kpi.getJour() +
-                    " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
-                    "charged base (" + kpi.getCb_30j() + "taux charged base (" + String.format("%.2f", (kpi.getCb_30j() / kpi.getParc())*100) +
-                    "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
-                    "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
-                    "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
-            for (Rdz rdz : rdzs) {
-                if (kpi.getZone().equals(rdz.getZone())) {
-                    String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + rdz.getTel() + "&text=" + URLEncoder.encode(message, "UTF-8");
-                    httpClientService.get(url);
+        try{
+            logger.info("Fetching RDZs...");
+            List<Rdz> rdzs = rdzRepo.getAll("");
+            logger.info("Rdz fetched "+ rdzs.size());
+
+            logger.info("Fetching KPIs...");
+            List<Kpi> kpis = kpiRepo.getAll(LocalDate.parse(date));
+            logger.info("KPIs fetched..."+kpis.size());
+            for (Kpi kpi : kpis) {
+                String message = "Données du " + kpi.getJour() +
+                        " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), " +
+                        "charged base (" + kpi.getCb_30j() + "), taux charged base (" + String.format("%.2f", (kpi.getCb_30j() / (double) kpi.getParc()) * 100) +
+                        "%), act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
+                        "mtt rec (" + String.format("%.2f", kpi.getMtt_rec()) + "), " +
+                        "mtt cum rec (" + String.format("%.2f", kpi.getCumul_mtt_rec()) + ")";
+                for (Rdz rdz : rdzs) {
+                    if (kpi.getZone().equals(rdz.getZone())) {
+                        String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=" + APP_NAME + "&to=" + rdz.getTel() + "&text=" + URLEncoder.encode(message, "UTF-8");
+                        logger.info("Sending SMS to URL: " + url);
+                        httpClientService.get(url);
+                    }
                 }
             }
+            User user = userRepo.findByTri(tri);
+            logger.info("User fetched: " + user.getTri());
+            return saveHistoric(endDate,user);
+        }catch (Exception e){
+            logger.error("Error occurred in sendSms: ", e);
+            return Response.serverError().build();
         }
-        // Save historic
-        User user = userRepo.findByTri(tri);
-        return saveHistoric(endDate,user);
     }
 
     public Response getZone() {
