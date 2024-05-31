@@ -1,7 +1,5 @@
 package services;
-import io.quarkus.arc.impl.Mockable;
 import io.quarkus.test.InjectMock;
-import io.quarkus.test.Mock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
@@ -18,7 +16,6 @@ import org.acme.repo.app_sms_833.RdzRepo;
 import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.repo.dm_rf.DwhRepo;
 import org.acme.services.KpiService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -26,14 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 public class KpiServiceTest {
@@ -171,6 +168,16 @@ public class KpiServiceTest {
         Mockito.verify(dwhRepo, times(1)).getAllZone();
     }
     @Test
+    void getAllZoneWithException(){
+        Mockito.when(dwhRepo.getAllZone()).thenThrow(new RuntimeException("Database error"));
+        Response response=kpiService.getZone();
+
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+
+        Mockito.verify(dwhRepo).getAllZone();
+    }
+    @Test
     void getHistoricTest(){
         String dateExemple="2018-08-01";
         Mockito.when(historicRepo.getAll(date)).thenReturn(historics);
@@ -186,7 +193,19 @@ public class KpiServiceTest {
         assertEquals(historics.get(0).getSendDate(),entity.get(0).getSendDate());
         assertEquals(historics.get(0).getIdUser(),entity.get(0).getIdUser());
 
-        Mockito.verify(historicRepo, times(1)).getAll(date);
+        Mockito.verify(historicRepo, times(1)).getAll(any(LocalDate.class));
+    }
+    @Test
+    void getHistoricWithException(){
+        String date="2018-08-01";
+        Mockito.when(historicRepo.getAll(LocalDate.parse(date))).thenThrow(new RuntimeException("Database error"));
+
+        Response response =kpiService.getHistoric(date);
+
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+
+        Mockito.verify(historicRepo).getAll(any(LocalDate.class));
 
     }
     @Test
@@ -206,7 +225,7 @@ public class KpiServiceTest {
         assertEquals(dwhResList.get(0).getParc(),entity.get(0).getParc());
         assertEquals(dwhResList.get(1).getJour(),entity.get(1).getJour());
 
-        Mockito.verify(dwhRepo).getAll(startDate,yesterday);
+        Mockito.verify(dwhRepo).getAll(any(LocalDate.class),any(LocalDate.class));
     }
     @Test
     void shouldHandleExceptionGracefully() {
@@ -221,7 +240,7 @@ public class KpiServiceTest {
         assertNotNull(response);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
-        Mockito.verify(dwhRepo, times(1)).getAll(startDate, yesterday);
+        Mockito.verify(dwhRepo, times(1)).getAll(any(LocalDate.class),any(LocalDate.class));
     }
     @Test
     void testSmsSuccess() throws Exception{
@@ -270,11 +289,20 @@ public class KpiServiceTest {
     }
     @Test
     void saveHistoric(){
-        //doNothing().when(historicRepo.save(historic));
         doNothing().when(historicRepo).save(any(Historic.class));
         Response response=kpiService.saveHistoric(LocalDate.now(),user);
         assertNotNull(response);
         assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+        Mockito.verify(historicRepo).save(any(Historic.class));
+    }
+    @Test
+    void saveHistoricWithException(){
+        doThrow(new RuntimeException()).when(historicRepo).save(any(Historic.class));
+
+        Response response=kpiService.saveHistoric(LocalDate.now(),user);
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+
         Mockito.verify(historicRepo).save(any(Historic.class));
     }
     @Test
@@ -296,6 +324,94 @@ public class KpiServiceTest {
         Mockito.verify(kpiRepo).removeAll(date);
         Mockito.verify(kpiRepo, times(2)).save(any(Kpi.class));
     }
-}
+    @Test
+    void getAllDwhWithEmptyList(){
+        LocalDate date=LocalDate.of(2024,05,25);
+        LocalDate startDate=date.withDayOfMonth(1);
+        LocalDate endDate=date;
 
+        DwhRes dwhRes=Mockito.mock(DwhRes.class);
+        DwhRes dwhRes3=Mockito.mock(DwhRes.class);
+        Mockito.when(dwhRes.getZone()).thenReturn("Alaotra");
+        Mockito.when(dwhRes.getActivation()).thenReturn(1L);
+        Mockito.when(dwhRes.getJour()).thenReturn(LocalDate.parse("2024-05-25"));
+        Mockito.when(dwhRes.getMois_annee()).thenReturn("05-25");
+        Mockito.when(dwhRes.getParc()).thenReturn(0L);
+        Mockito.when(dwhRes.getMtt_rec()).thenReturn(3.7);
+        Mockito.when(dwhRes.getCumul_mtt_rec()).thenReturn(56.9);
+        Mockito.when(dwhRes.getCumul_activation()).thenReturn(5L);
+        Mockito.when(dwhRes.getCb_7j()).thenReturn(5L);
+        Mockito.when(dwhRes.getCb_30j()).thenReturn(6L);
+        Mockito.when(dwhRes.getCb_30jd()).thenReturn(7L);
+
+        Mockito.when(dwhRes3.getZone()).thenReturn("Itasy");
+        Mockito.when(dwhRes3.getActivation()).thenReturn(1L);
+        Mockito.when(dwhRes3.getJour()).thenReturn(LocalDate.parse("2024-05-25"));
+        Mockito.when(dwhRes3.getMois_annee()).thenReturn("05-25");
+        Mockito.when(dwhRes3.getParc()).thenReturn(0L);
+        Mockito.when(dwhRes3.getMtt_rec()).thenReturn(3.9);
+        Mockito.when(dwhRes3.getCumul_mtt_rec()).thenReturn(6.9);
+        Mockito.when(dwhRes3.getCumul_activation()).thenReturn(9L);
+        Mockito.when(dwhRes3.getCb_7j()).thenReturn(6L);
+        Mockito.when(dwhRes3.getCb_30j()).thenReturn(4L);
+        Mockito.when(dwhRes3.getCb_30jd()).thenReturn(3L);
+
+        List<DwhRes> list=new ArrayList<>();
+        list=Arrays.asList(dwhRes,dwhRes3);
+
+        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenReturn(list);
+        Response response = kpiService.getAllDwh(date.toString());
+
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        List<DwhRes> returnedDwhResList = (List<DwhRes>) response.getEntity();
+        assertTrue(returnedDwhResList.isEmpty());
+        verify(dwhRepo).getAll(startDate, endDate);
+        verify(kpiRepo, never()).removeAll(any(LocalDate.class));
+        verify(kpiRepo, never()).save(any(Kpi.class));
+    }
+    @Test
+    void getAllDwhShouldReturnServerError(){
+        LocalDate date= LocalDate.of(2024,05,25);
+        LocalDate startDate=date.withDayOfMonth(1);
+        LocalDate endDate=date;
+        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenThrow(new RuntimeException("Database error"));
+
+        Response response=kpiService.getAllDwh(date.toString());
+
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+        Mockito.verify(dwhRepo).getAll(any(LocalDate.class),any(LocalDate.class));
+        verify(kpiRepo, never()).removeAll(any(LocalDate.class));
+        verify(kpiRepo, never()).save(any(Kpi.class));
+    }
+    @Test
+    void getAllTestShouldReturnOk(){
+        LocalDate date=LocalDate.of(2024,05,25);
+        Mockito.when(kpiRepo.getAll(date)).thenReturn(kpis);
+
+        Response response=kpiService.getAll(date.toString());
+        List<Kpi> entity=(List<Kpi>) response.getEntity();
+
+        assertNotNull(response);
+        assertNotNull(response.getEntity());
+        assertEquals(kpis, response.getEntity());
+        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+        assertEquals(2,entity.size());
+
+        Mockito.verify(kpiRepo).getAll(any(LocalDate.class));
+    }
+    @Test
+    void getAllShouldReturnServerError(){
+        LocalDate date=LocalDate.of(2024,05,25);
+        Mockito.when(kpiRepo.getAll(date)).thenThrow(new RuntimeException("Database Error"));
+
+        Response response=kpiService.getAll(date.toString());
+
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+        Mockito.verify(kpiRepo).getAll(any(LocalDate.class));
+
+    }
+}
 
