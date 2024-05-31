@@ -36,6 +36,7 @@ public void setup(){
     addRdzReq.setTel("0989876479");
     addRdzReq.setTri("iol");
     addRdzReq.setZone("Alaotra");
+
     rdz1=new Rdz(addRdzReq);
     AddRdzReq addRdzReq1=new AddRdzReq();
     addRdzReq1.setEmail("rakoto@gmail.com");
@@ -48,10 +49,12 @@ public void setup(){
     rdz2=new Rdz(addRdzReq1);
     listMock.add(rdz1);
     listMock.add(rdz2);
-    when(rdzRepo.getAll("")).thenReturn(listMock);
+
 }
  @Test
     void getAllRdzTest(){
+     when(rdzRepo.getAll("")).thenReturn(listMock);
+
     Response response=rdzService.getAll("");
     assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
     assertNotNull(response);
@@ -61,6 +64,18 @@ public void setup(){
     assertEquals(2,entity.size());
     assertEquals("iol",entity.get(0).getTri());
     assertEquals("dny",entity.get(1).getTri());
+
+    Mockito.verify(rdzRepo).getAll(any(String.class));
+ }
+ @Test
+    void getAllRdzTestWithException(){
+        Mockito.when(rdzRepo.getAll("")).thenThrow(new RuntimeException());
+
+        Response response=rdzService.getAll("");
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+
+        Mockito.verify(rdzRepo).getAll(any(String.class));
  }
 
  @Test
@@ -74,8 +89,10 @@ public void setup(){
     req.setTri("iol");
     req.setZone("Alaotra");
     Rdz rdz=new Rdz(req);
+
     doNothing().when(rdzRepo).persist(any(Rdz.class));
     Response response=rdzService.addRdz(req);
+
     assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
     assertNotNull(response);
     assertNotNull(response.getEntity());
@@ -88,6 +105,27 @@ public void setup(){
     assertEquals(rdz.getZone(),entity.getZone());
     assertEquals(rdz.getTel(),entity.getTel());
     verify(rdzRepo).persist(any(Rdz.class));
+ }
+ @Test
+ void addRdzTestWithException(){
+     AddRdzReq req=new AddRdzReq();
+     req.setEmail("rakoto@gmail.com");
+     req.setIdZone(1);
+     req.setNom("RAKOTOVAO");
+     req.setPrenom("Michelle");
+     req.setTel("0345415027");
+     req.setTri("iol");
+     req.setZone("Alaotra");
+     Rdz rdz=new Rdz(req);
+
+    doThrow(new RuntimeException()).when(rdzRepo).persist(any(Rdz.class));
+
+    Response response=rdzService.addRdz(req);
+
+    assertNotNull(response);
+    assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+
+    Mockito.verify(rdzRepo).persist(any(Rdz.class));
  }
 
     @Test
@@ -108,5 +146,16 @@ public void setup(){
         Response response = rdzService.delete(idToDelete);
         verify(rdzRepo, times(1)).remove(idToDelete);
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    }
+    @Test
+    void deleteRdzTestWithException(){
+        long id=1L;
+        doThrow(new RuntimeException()).when(rdzRepo).remove(id);
+
+        Response response = rdzService.delete(id);
+
+        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        verify(rdzRepo, times(1)).remove(id);
     }
 }
