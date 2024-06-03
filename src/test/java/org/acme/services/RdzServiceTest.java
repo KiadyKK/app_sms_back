@@ -1,4 +1,4 @@
-package services;
+package org.acme.services;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.Rdz;
 import org.acme.repo.app_sms_833.RdzRepo;
 import org.acme.requests.AddRdzReq;
-import org.acme.services.RdzService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
