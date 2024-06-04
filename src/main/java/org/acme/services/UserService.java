@@ -58,13 +58,18 @@ public class UserService {
     public boolean modifyMdp(@NotNull PutPasswordReq req){
         String trigramme=req.getTrigramme();
         String newMdp=req.getNewPassword();
-        User user=userRepo.findByTri(trigramme);
-        boolean checkPassword=BCrypt.checkpw(req.getPassword(),user.getMdp());
-        if(checkPassword){
-            user.setMdp(BCrypt.hashpw(newMdp,BCrypt.gensalt()));
-            return true;
-        }else{
-            return false;
+        try{
+            User user=userRepo.findByTri(trigramme);
+            boolean checkPassword=BCrypt.checkpw(req.getPassword(),user.getMdp());
+            if(checkPassword){
+                user.setMdp(BCrypt.hashpw(newMdp,BCrypt.gensalt()));
+
+                return true;
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            return  false;
         }
     }
 

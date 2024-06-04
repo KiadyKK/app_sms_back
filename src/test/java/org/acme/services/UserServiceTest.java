@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.User;
 import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.requests.AddUserReq;
+import org.acme.requests.PutPasswordReq;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -17,8 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 @QuarkusTest
 class UserServiceTest {
     @Inject
@@ -52,23 +54,63 @@ class UserServiceTest {
         userList= Arrays.asList(user,user1);
     }
     @Test
-    void login() {
+    void loginSuccess() {
 
     }
     @Test
-    void modifyMdp(){
+    void modifyMdpSuccess(){
+        PutPasswordReq req=Mockito.mock(PutPasswordReq.class);
+        Mockito.when(req.getTrigramme()).thenReturn("iol");
+        Mockito.when(req.getPassword()).thenReturn("iol");
+        Mockito.when(req.getNewPassword()).thenReturn("1234");
+        User user=Mockito.mock(User.class);
+        Mockito.when(user.getTri()).thenReturn("iol");
+        Mockito.when(user.getMdp()).thenReturn(BCrypt.hashpw("iol",BCrypt.gensalt()));
+        Mockito.when(userRepo.findByTri(req.getTrigramme())).thenReturn(user);
+        boolean response=userService.modifyMdp(req);
+        assertTrue(response);
+        Mockito.verify(userRepo).findByTri(any(String.class));
+        Mockito.verify(user).setMdp(anyString());
+    }
+    @Test
+    void modifyMdpFailureWrongPassword(){
+        PutPasswordReq req=Mockito.mock(PutPasswordReq.class);
+        Mockito.when(req.getTrigramme()).thenReturn("iol");
+        Mockito.when(req.getPassword()).thenReturn("ioliol");
+        Mockito.when(req.getNewPassword()).thenReturn("1234");
 
+        User user=Mockito.mock(User.class);
+        Mockito.when(user.getTri()).thenReturn("iol");
+        Mockito.when(user.getMdp()).thenReturn(BCrypt.hashpw("iol",BCrypt.gensalt()));
+
+        Mockito.when(userRepo.findByTri(req.getTrigramme())).thenReturn(user);
+        boolean response=userService.modifyMdp(req);
+        assertFalse(response);
+        Mockito.verify(userRepo).findByTri(any(String.class));
+        verify(user, never()).setMdp(anyString());
+    }
+    @Test
+    void modifyMdpUserNotFound() {
+        PutPasswordReq req = Mockito.mock(PutPasswordReq.class);
+        Mockito.when(req.getTrigramme()).thenReturn("iol");
+        Mockito.when(req.getPassword()).thenReturn("iol");
+        Mockito.when(req.getNewPassword()).thenReturn("1234");
+
+        Mockito.when(userRepo.findByTri(req.getTrigramme())).thenReturn(null);
+
+        boolean response = userService.modifyMdp(req);
+
+        assertFalse(response);
+        Mockito.verify(userRepo).findByTri(anyString());
     }
     @Test
     void generateJwt(){
-        User user= Mockito.mock(User.class);
+      /*User user= Mockito.mock(User.class);
         Mockito.when(user.getTri()).thenReturn("iol");
         Mockito.when(user.getPrenom()).thenReturn("John");
         Mockito.when(user.getNom()).thenReturn("Doe");
-
         String expectedToken="TestToken";
-
-
+       */
     }
     @Test
     void addUser() {
