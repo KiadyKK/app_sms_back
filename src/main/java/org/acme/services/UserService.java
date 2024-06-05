@@ -13,12 +13,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.util.List;
 import java.util.Optional;
-
 import static org.acme.common.Constant.APPSMS;
-
 @ApplicationScoped
 public class UserService {
     @Inject

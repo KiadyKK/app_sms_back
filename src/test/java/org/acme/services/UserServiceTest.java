@@ -1,13 +1,13 @@
 package org.acme.services;
 import io.quarkus.test.InjectMock;
-import io.quarkus.test.Mock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.vertx.ext.auth.impl.jose.JWT;
 import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.User;
 import org.acme.repo.app_sms_833.UserRepo;
 import org.acme.requests.AddUserReq;
+import org.acme.requests.LoginReq;
 import org.acme.requests.PutPasswordReq;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -20,14 +20,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
 @QuarkusTest
 class UserServiceTest {
     @Inject
     UserService userService;
     @InjectMock
     UserRepo userRepo;
-    private static  List<User> userList ;
+    private static  List<User> userList;
+    @ConfigProperty(name = "admin.tri")
+    private String ADMIN_TRI;
+    @ConfigProperty(name = "admin.mdp")
+    private String ADMIN_MDP;
     @BeforeEach
     void setup(){
         MockitoAnnotations.openMocks(this);
@@ -55,8 +58,64 @@ class UserServiceTest {
     }
     @Test
     void loginSuccess() {
+        LoginReq req=Mockito.mock(LoginReq.class);
+        Mockito.when(req.getTri()).thenReturn("iol");
+        Mockito.when(req.getMdp()).thenReturn("iol");
 
+        User user=Mockito.mock(User.class);
+        Mockito.when(user.getTri()).thenReturn("iol");
+        Mockito.when(user.getMdp()).thenReturn(BCrypt.hashpw("iol",BCrypt.gensalt()));
+        Mockito.when(userRepo.findByTri("iol")).thenReturn(user);
+        Response response=userService.login(req);
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+
+        Mockito.verify(userRepo).findByTri(any(String.class));
     }
+    @Test
+    void loginWrongPassword(){
+        LoginReq req=Mockito.mock(LoginReq.class);
+        Mockito.when(req.getTri()).thenReturn("iol");
+        Mockito.when(req.getMdp()).thenReturn("wrongPassword");
+
+        User user=Mockito.mock(User.class);
+        Mockito.when(user.getTri()).thenReturn("iol");
+        Mockito.when(user.getMdp()).thenReturn(BCrypt.hashpw("iol",BCrypt.gensalt()));
+        Mockito.when(userRepo.findByTri("iol")).thenReturn(user);
+        Response response=userService.login(req);
+        assertNotNull(response);
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(),response.getStatus());
+
+        Mockito.verify(userRepo).findByTri(any(String.class));
+    }
+    @Test
+    void loginUserNotFound(){
+        LoginReq req=Mockito.mock(LoginReq.class);
+        Mockito.when(req.getTri()).thenReturn("iol");
+        Mockito.when(req.getMdp()).thenReturn("iol");
+
+        Mockito.when(userRepo.findByTri(any(String.class))).thenReturn(null);
+        Response response=userService.login(req);
+        assertNotNull(response);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),response.getStatus());
+
+        Mockito.verify(userRepo).findByTri(any(String.class));
+    }
+    @Test
+    void loginAdmin(){
+        LoginReq req=Mockito.mock(LoginReq.class);
+        User user=Mockito.mock(User.class);
+        Mockito.when(req.getTri()).thenReturn(ADMIN_TRI);
+        Mockito.when(req.getMdp()).thenReturn(ADMIN_MDP);
+
+        Mockito.when(userRepo.findByTri(any(String.class))).thenReturn(user);
+
+        Response response=userService.login(req);
+
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+    }
+
     @Test
     void modifyMdpSuccess(){
         PutPasswordReq req=Mockito.mock(PutPasswordReq.class);
@@ -71,6 +130,7 @@ class UserServiceTest {
         assertTrue(response);
         Mockito.verify(userRepo).findByTri(any(String.class));
         Mockito.verify(user).setMdp(anyString());
+
     }
     @Test
     void modifyMdpFailureWrongPassword(){
