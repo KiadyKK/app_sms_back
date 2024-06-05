@@ -1,6 +1,8 @@
 package org.acme.services;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.jwt.build.Jwt;
+import io.vertx.core.json.JsonObject;
 import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.User;
 import org.acme.repo.app_sms_833.UserRepo;
@@ -14,6 +16,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import jakarta.inject.Inject;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -164,13 +167,21 @@ class UserServiceTest {
         Mockito.verify(userRepo).findByTri(anyString());
     }
     @Test
-    void generateJwt(){
-      /*User user= Mockito.mock(User.class);
+    void generateJwt() throws Exception{
+      User user= Mockito.mock(User.class);
         Mockito.when(user.getTri()).thenReturn("iol");
         Mockito.when(user.getPrenom()).thenReturn("John");
         Mockito.when(user.getNom()).thenReturn("Doe");
-        String expectedToken="TestToken";
-       */
+
+        Response response=userService.callerMethod(user);
+        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
+
+        JsonObject jsonObject = (JsonObject) response.getEntity();
+        assertNotNull(jsonObject.getString("token"));
+        assertTrue(jsonObject.getString("token").startsWith("Bearer "));
+        User returnedUser = (User) jsonObject.getValue("user");
+        assertEquals(user, returnedUser);
     }
     @Test
     void addUser() {

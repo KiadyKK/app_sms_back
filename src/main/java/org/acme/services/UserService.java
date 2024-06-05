@@ -69,7 +69,13 @@ public class UserService {
             return  false;
         }
     }
-
+    public Response callerMethod(User user){
+        try{
+            return generateJwt(user);
+        }catch (Exception e){
+            return Response.serverError().build();
+        }
+    }
     private Response generateJwt(User user) {
         try{
             String token = Jwt.issuer("appsms")
