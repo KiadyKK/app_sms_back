@@ -7,15 +7,12 @@ import org.acme.model.dm_rf.DwhRes;
 import org.acme.services.KpiService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import javax.print.attribute.standard.Media;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 @QuarkusTest
 class KpiResourceTest {
     @InjectMock
@@ -80,17 +77,73 @@ class KpiResourceTest {
         Mockito.verify(kpiService).getDwh();
     }
     @Test
-    void getAll() {
-    }
-
-    @Test
     void testJson() {
+        String msisdn="0323232323";
+        Mockito.when(kpiService.testSms(any(String.class))).thenReturn(Response.noContent().build());
+        given()
+                .pathParam("msisdn",msisdn)
+                .when().get("/kpi/test-sms/{msisdn}")
+                .then()
+                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+        Mockito.verify(kpiService).testSms(any(String.class));
+    }
+    @Test
+    void testJsonException(){
+        String msisdn="0323232323";
+        Mockito.when(kpiService.testSms(any(String.class))).thenThrow(new RuntimeException("error occured"));
+        given()
+                .pathParam("msisdn",msisdn)
+                .when().get("/kpi/test-sms/{msisdn}")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).testSms(any(String.class));
+    }
+    @Test
+    void getAll() {
+
     }
 
     @Test
-    void getAllDwh() {
-    }
+    void getAllDwhSuccess() {
+        String date="2018-08-01";
+        DwhRes dwhres=new DwhRes();
+        dwhres.setActivation(4L);
+        dwhres.setCb_7j(8L);
+        dwhres.setCb_30j(9L);
+        dwhres.setCb_30jd(10L);
+        dwhres.setCumul_activation(20L);
+        dwhres.setCumul_mtt_rec(78.9);
+        dwhres.setJour(LocalDate.parse("2018-08-01"));
+        dwhres.setMois_annee("08-01");
+        dwhres.setMtt_rec(67.9);
+        dwhres.setParc(8L);
+        dwhres.setZone("Alaotra");
 
+        DwhRes dwhRes1=new DwhRes();
+        dwhRes1.setActivation(4L);
+        dwhRes1.setCb_7j(8l);
+        dwhRes1.setCb_30j(9L);
+        dwhRes1.setCb_30jd(10L);
+        dwhRes1.setCumul_activation(20L);
+        dwhRes1.setCumul_mtt_rec(78.9);
+        dwhRes1.setJour(LocalDate.parse("2018-08-01"));
+        dwhRes1.setMois_annee("08-01");
+        dwhRes1.setMtt_rec(67.9);
+        dwhRes1.setParc(8L);
+        dwhRes1.setZone("Itasy");
+
+        List<DwhRes>list=Arrays.asList(dwhres,dwhRes1);
+        Mockito.when(kpiService.getAllDwh(date)).thenReturn(Response.ok(list).build());
+        given()
+                .queryParam("date",date)
+                .when().get("/kpi/dwh")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("[0].jour",is(dwhres.getJour().toString()))
+                .body("[1].mtt_rec",is(dwhRes1.getMtt_rec().floatValue()));
+        Mockito.verify(kpiService).getAllDwh(any(String.class));
+    }
     @Test
     void getZone() {
     }

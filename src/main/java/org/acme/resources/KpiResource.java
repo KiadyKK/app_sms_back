@@ -43,7 +43,6 @@ public class KpiResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-//    @RolesAllowed({APPSMS})
     @Path("dwh")
     public Response getAllDwh(@QueryParam("date") String date) {
         return kpiService.getAllDwh(date);
