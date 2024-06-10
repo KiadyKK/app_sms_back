@@ -7,6 +7,8 @@ import org.acme.model.dm_rf.DwhRes;
 import org.acme.services.KpiService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import javax.print.attribute.standard.Media;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +66,19 @@ class KpiResourceTest {
                 .body("[1].mtt_rec", is(dwhRes1.getMtt_rec().floatValue()));
         Mockito.verify(kpiService).getDwh();
     }
-
+    @Test
+    void getDwhException(){
+        DwhRes dwhRes=new DwhRes();
+        DwhRes dwhRes1=new DwhRes();
+        List<DwhRes>list=Arrays.asList(dwhRes,dwhRes1);
+        Mockito.when(kpiService.getDwh()).thenThrow(new RuntimeException("Database error"));
+        given()
+                .when().get("/kpi/cron")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON);
+        Mockito.verify(kpiService).getDwh();
+    }
     @Test
     void getAll() {
     }
