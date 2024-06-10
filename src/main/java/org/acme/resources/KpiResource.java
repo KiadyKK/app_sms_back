@@ -1,6 +1,4 @@
 package org.acme.resources;
-
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -8,13 +6,10 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.acme.services.KpiService;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
-
 import static org.acme.common.Constant.APPSMS;
-
 @Path("kpi")
 @ApplicationScoped
 public class KpiResource {

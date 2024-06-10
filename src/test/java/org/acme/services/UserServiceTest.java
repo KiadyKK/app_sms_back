@@ -1,7 +1,6 @@
 package org.acme.services;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.jwt.build.Jwt;
 import io.vertx.core.json.JsonObject;
 import jakarta.ws.rs.core.Response;
 import org.acme.model.app_sms_833.User;

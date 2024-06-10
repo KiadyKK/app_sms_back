@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
 @QuarkusTest
 public class KpiServiceTest {
     private static final Logger log = LoggerFactory.getLogger(KpiServiceTest.class);
