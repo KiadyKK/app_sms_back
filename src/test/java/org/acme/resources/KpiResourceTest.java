@@ -9,6 +9,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.acme.model.app_sms_833.Historic;
+import org.acme.model.app_sms_833.Kpi;
+import org.acme.model.app_sms_833.User;
 import org.acme.model.dm_rf.DwhRes;
 import org.acme.model.dm_rf.Zone;
 import org.acme.services.KpiService;
@@ -16,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.security.Principal;
 import java.time.LocalDate;
@@ -120,10 +124,63 @@ class KpiResourceTest extends QuarkusTestExtension {
         Mockito.verify(kpiService).testSms(any(String.class));
     }
     @Test
-    void getAll() {
+    @TestSecurity(authorizationEnabled = false)
+    void getAllSuccess() {
+        String date="2018-08-01";
+        Kpi kpi=new Kpi();
+        kpi.setMtt_rec(7.9);
+        kpi.setActivation(7);
+        kpi.setCb_7j(8);
+        kpi.setCb_30j(7);
+        kpi.setCb_30jd(5);
+        kpi.setCumul_activation(89);
+        kpi.setCumul_mtt_rec(78.4);
+        kpi.setCumul_mtt_rec(56.6);
+        kpi.setJour(LocalDate.parse("2018-08-01"));
+        kpi.setMois_annee("08-2018");
+        kpi.setMtt_rec(67.8);
+        kpi.setParc(89);
+        kpi.setZone("Alaotra");
 
+        Kpi kpi1=new Kpi();
+        kpi1.setMtt_rec(7.9);
+        kpi1.setActivation(7);
+        kpi1.setCb_7j(8);
+        kpi1.setCb_30j(7);
+        kpi1.setCb_30jd(5);
+        kpi1.setCumul_activation(89);
+        kpi1.setCumul_mtt_rec(78.4);
+        kpi1.setCumul_mtt_rec(56.6);
+        kpi1.setJour(LocalDate.parse("2018-08-01"));
+        kpi1.setMois_annee("08-2018");
+        kpi1.setMtt_rec(67.8);
+        kpi1.setParc(89);
+        kpi1.setZone("Itasy");
+
+        List<Kpi>kpis=Arrays.asList(kpi,kpi1);
+        Mockito.when(kpiService.getAll(date)).thenReturn(Response.ok(kpis).build());
+        given()
+                .queryParam("date",date)
+                .when().get("kpi")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("[0].mtt_rec",is(kpi.getMtt_rec().floatValue()))
+                .body("size()",is(kpis.size()));
+        Mockito.verify(kpiService).getAll(any(String.class));
     }
-
+    @Test
+    @TestSecurity(authorizationEnabled = false)
+    void getAllException(){
+        String date="2018-08-01";
+        Mockito.when(kpiService.getAll(any(String.class))).thenReturn(Response.serverError().build());
+        given()
+                .queryParam("date",date)
+                .when().get("/kpi")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).getAll(any(String.class));
+    }
     @Test
     void getAllDwhSuccess() {
         String date="2018-08-01";
@@ -166,6 +223,17 @@ class KpiResourceTest extends QuarkusTestExtension {
         Mockito.verify(kpiService).getAllDwh(any(String.class));
     }
     @Test
+   void getAllDwhException(){
+        String date="2018-08-01";
+        Mockito.when(kpiService.getAllDwh(any(String.class))).thenReturn(Response.serverError().build());
+        given()
+                .queryParam("date",date)
+                .when().get("/kpi/dwh")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).getAllDwh(any(String.class));
+    }
+    @Test
     @TestSecurity(authorizationEnabled = false)
     void getZoneSuccess() {
         Zone zone=new Zone();
@@ -188,12 +256,83 @@ class KpiResourceTest extends QuarkusTestExtension {
         Mockito.verify(kpiService).getZone();
 
     }
-
     @Test
-    void send() {
+    @TestSecurity(authorizationEnabled = false)
+    void getZoneException(){
+        Mockito.when(kpiService.getZone()).thenReturn(Response.serverError().build());
+        given()
+                .when().get(kpiZoneUrl)
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).getZone();
     }
-
     @Test
-    void getHistoric() {
+    @TestSecurity(authorizationEnabled = false)
+    void sendSuccess() throws UnsupportedEncodingException {
+        String tri="bom";
+        String date="2018-08-01";
+        Mockito.when(kpiService.sendSms(date,tri)).thenReturn(Response.ok().build());
+        given()
+                .header("tri",tri)
+                .queryParam("date",date)
+                .when().get("/kpi/send")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode());
+        Mockito.verify(kpiService).sendSms(any(String.class),any(String.class));
+    }
+    @Test
+    @TestSecurity(authorizationEnabled = false)
+    void sendException() throws UnsupportedEncodingException{
+        String tri="bom";
+        String date="2018-08-01";
+        Mockito.when(kpiService.sendSms(any(String.class),any(String.class))).thenReturn(Response.serverError().build());
+        given()
+                .header("tri",tri)
+                .queryParam("date",date)
+                .when().get("/kpi/send")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).sendSms(any(String.class),any(String.class));
+    }
+    @Test
+    @TestSecurity(authorizationEnabled = false)
+    void getHistoricSuccess() {
+        String date="2018-08-01";
+        Historic historic=new Historic();
+        historic.setIdUser(1);
+        historic.setKpiDate(LocalDate.parse("2018-08-01"));
+        historic.setSendDate(LocalDate.parse("2018-08-02"));
+        historic.setTriUser("bla");
+
+        Historic historic1=new Historic();
+        historic1.setIdUser(1);
+        historic1.setKpiDate(LocalDate.parse("2018-08-25"));
+        historic1.setSendDate(LocalDate.parse("2018-08-26"));
+        historic1.setTriUser("bom");
+
+        List<Historic> historics=Arrays.asList(historic,historic1);
+        Mockito.when(kpiService.getHistoric(date)).thenReturn(Response.ok(historics).build());
+
+        given()
+                .queryParam("date",date)
+                .when().get("/kpi/historic")
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("size()",is(historics.size()))
+                .body("[0].triUser",is(historic.getTriUser()));
+        Mockito.verify(kpiService).getHistoric(any(String.class));
+    }
+    @Test
+    @TestSecurity(authorizationEnabled = false)
+    void getHistoricException(){
+        String date="2018-08-01";
+        Mockito.when(kpiService.getHistoric(any(String.class))).thenReturn(Response.serverError().build());
+        given()
+                .queryParam("date",date)
+                .when().get("/kpi/historic")
+                .then()
+                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Mockito.verify(kpiService).getHistoric(any(String.class));
     }
 }
