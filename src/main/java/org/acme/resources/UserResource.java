@@ -46,9 +46,7 @@ public class UserResource {
             }else{
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
-          //  return userService.modifyMdp(req);
         }catch(Exception e){
-            e.printStackTrace();
             return null;
         }
     }
