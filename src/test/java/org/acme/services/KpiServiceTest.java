@@ -21,9 +21,11 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,6 +49,7 @@ public class KpiServiceTest {
     UserRepo userRepo;
     @Inject
     KpiService kpiService;
+
     private static List<Zone> zones;
     private static List<Historic> historics;
     private static LocalDate date;
@@ -206,56 +209,58 @@ public class KpiServiceTest {
         Mockito.verify(historicRepo).getAll(any(LocalDate.class));
 
     }
-    @Test
-    void getDwhTest(){
-        LocalDate yesterday= LocalDate.now().minusDays(1);
-        LocalDate startDate=yesterday.withDayOfMonth(1);
-        Mockito.when(dwhRepo.getAll(startDate,yesterday)).thenReturn(dwhResList);
 
-        Response response=kpiService.getDwh();
 
-        assertNotNull(response);
-        assertNotNull(response.getEntity());
-        assertEquals(Response.Status.OK.getStatusCode(),response.getStatus());
-
-        List<DwhRes> entity=(List<DwhRes>) response.getEntity();
-        assertEquals(2,entity.size());
-        assertEquals(dwhResList.get(0).getParc(),entity.get(0).getParc());
-        assertEquals(dwhResList.get(1).getJour(),entity.get(1).getJour());
-
-        Mockito.verify(dwhRepo).getAll(any(LocalDate.class),any(LocalDate.class));
-    }
-    @Test
-    void shouldHandleExceptionGracefully() {
-
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDate startDate = yesterday.withDayOfMonth(1);
-
-        Mockito.when(dwhRepo.getAll(startDate, yesterday)).thenThrow(new RuntimeException("Database error"));
-
-        Response response = kpiService.getDwh();
-
-        assertNotNull(response);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-
-        Mockito.verify(dwhRepo, times(1)).getAll(any(LocalDate.class),any(LocalDate.class));
-    }
-    @Test
+   /* @Test
     void testSmsSuccess() throws Exception{
         String msisdn="0123456789";
         String excpectedResponse="I am an excpected response";
         Mockito.when(httpClientService.get(anyString())).thenReturn(excpectedResponse);
         Response response=kpiService.testSms(msisdn);
-        Mockito.verify(httpClientService,times(1)).get(anyString());
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(),response.getStatus());
+        Mockito.verify(httpClientService).get(any(String.class));
+    }
+
+    */
+    @Test
+    void testSmsSuccess() throws UnsupportedEncodingException {
+        String msisdn = "0123456789";
+        Kpi kpi = new Kpi();
+        kpi.setCb_30j(100);
+        kpi.setMtt_rec(45.9);
+        kpi.setCumul_mtt_rec(9.9);
+        kpi.setActivation(77);
+        kpi.setCumul_activation(56);
+        kpi.setDelta_parc(56);
+        kpi.setParc(200);
+        kpi.setZone("zone1");
+        kpi.setJour(LocalDate.now());
+        Mockito.when(kpiRepo.listAll()).thenReturn(Collections.singletonList(kpi));
+        Mockito.when(httpClientService.get(any(String.class))).thenReturn("Success");
+
+        String message = "Données du " + kpi.getJour() +
+                " : zone (" + kpi.getZone() + "), parc (" + kpi.getParc() + "), delta parc (" + kpi.getDelta_parc() + "), " +
+                "charged base (" + kpi.getCb_30j() + "), taux charged base (" + String.format("%.2f", ((double) kpi.getCb_30j() / kpi.getParc()) * 100) + "), " +
+                "act (" + kpi.getActivation() + "), cum act (" + kpi.getCumul_activation() + "), " +
+                "mtt rec (" + (int) kpi.getMtt_rec().doubleValue() + "), " +
+                "mtt cum rec (" + (int) kpi.getCumul_mtt_rec().doubleValue() + ")";
+
+        String url = "http://10.249.248.40:80/cgi-bin/sendsms?username=smsgw&password=mypass&from=APP_NAME&to=" + msisdn + "&text=" + URLEncoder.encode(message, "UTF-8");
+
+        Response response = kpiService.testSms(msisdn);
+
+        Mockito.verify(httpClientService).get(url);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
     @Test
     void testSmsError() throws Exception{
         String msisdn="0123456789";
-        Mockito.when(httpClientService.get(anyString())).thenThrow(new RuntimeException("Failed to get Url"));
+        Mockito.when(kpiRepo.listAll()).thenReturn(Collections.singletonList(new Kpi()));
+        Mockito.when(httpClientService.get(any(String.class))).thenThrow(new RuntimeException("Failed to get Url"));
         Response response =kpiService.testSms(msisdn);
-        Mockito.verify(httpClientService, times(1)).get(anyString());
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        Mockito.verify(httpClientService).get(any(String.class));
+
     }
 
     @Test
@@ -309,7 +314,7 @@ public class KpiServiceTest {
         LocalDate startDate=date.withDayOfMonth(1);
         LocalDate endDate=date;
 
-        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenReturn(dwhResList);
+        Mockito.when(dwhRepo.getAll(endDate)).thenReturn(dwhResList);
         Mockito.when(kpiRepo.removeAll(any(LocalDate.class))).thenReturn(6L);
         doNothing().when(kpiRepo).save(any(Kpi.class));
 
@@ -318,7 +323,7 @@ public class KpiServiceTest {
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         List<DwhRes> returnedDwhResList = (List<DwhRes>) response.getEntity();
         assertEquals(2, returnedDwhResList.size());
-        Mockito.verify(dwhRepo).getAll(startDate, endDate);
+        Mockito.verify(dwhRepo).getAll(endDate);
         Mockito.verify(kpiRepo).removeAll(date);
         Mockito.verify(kpiRepo, times(2)).save(any(Kpi.class));
     }
@@ -357,29 +362,28 @@ public class KpiServiceTest {
         List<DwhRes> list=new ArrayList<>();
         list=Arrays.asList(dwhRes,dwhRes3);
 
-        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenReturn(list);
+        Mockito.when(dwhRepo.getAll(endDate)).thenReturn(list);
         Response response = kpiService.getAllDwh(date.toString());
 
         assertNotNull(response);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         List<DwhRes> returnedDwhResList = (List<DwhRes>) response.getEntity();
         assertTrue(returnedDwhResList.isEmpty());
-        verify(dwhRepo).getAll(startDate, endDate);
+        verify(dwhRepo).getAll( endDate);
         verify(kpiRepo, never()).removeAll(any(LocalDate.class));
         verify(kpiRepo, never()).save(any(Kpi.class));
     }
     @Test
     void getAllDwhShouldReturnServerError(){
         LocalDate date= LocalDate.of(2024,05,25);
-        LocalDate startDate=date.withDayOfMonth(1);
         LocalDate endDate=date;
-        Mockito.when(dwhRepo.getAll(startDate,endDate)).thenThrow(new RuntimeException("Database error"));
+        Mockito.when(dwhRepo.getAll(endDate)).thenThrow(new RuntimeException("Database error"));
 
         Response response=kpiService.getAllDwh(date.toString());
 
         assertNotNull(response);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
-        Mockito.verify(dwhRepo).getAll(any(LocalDate.class),any(LocalDate.class));
+        Mockito.verify(dwhRepo).getAll(any(LocalDate.class));
         verify(kpiRepo, never()).removeAll(any(LocalDate.class));
         verify(kpiRepo, never()).save(any(Kpi.class));
     }

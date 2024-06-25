@@ -43,66 +43,7 @@ class KpiResourceTest extends QuarkusTestExtension {
     void setUp() {
     }
     @Test
-    void getDwhSuccess() {
-        DwhRes dwhres= new DwhRes();
-        dwhres.setActivation(4L);
-        dwhres.setCb_7j(8L);
-        dwhres.setCb_30j(9L);
-        dwhres.setCb_30jd(10L);
-        dwhres.setCumul_activation(20L);
-        dwhres.setCumul_mtt_rec(78.9);
-        dwhres.setJour(LocalDate.parse("2018-08-01"));
-        dwhres.setMois_annee("08-01");
-        dwhres.setMtt_rec(67.9);
-        dwhres.setParc(8L);
-        dwhres.setZone("Alaotra");
-
-        DwhRes dwhRes1=new DwhRes();
-        dwhRes1.setActivation(4L);
-        dwhRes1.setCb_7j(8l);
-        dwhRes1.setCb_30j(9L);
-        dwhRes1.setCb_30jd(10L);
-        dwhRes1.setCumul_activation(20L);
-        dwhRes1.setCumul_mtt_rec(78.9);
-        dwhRes1.setJour(LocalDate.parse("2018-08-01"));
-        dwhRes1.setMois_annee("08-01");
-        dwhRes1.setMtt_rec(67.9);
-        dwhRes1.setParc(8L);
-        dwhRes1.setZone("Itasy");
-        List<DwhRes> list= Arrays.asList(dwhres,dwhRes1);
-        Mockito.when(kpiService.getDwh()).thenReturn(Response.ok(list).build());
-        given()
-                .when().get("/kpi/cron")
-                .then()
-                .statusCode(200)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("[0].jour", is(dwhres.getJour().toString()))
-                .body("[0].zone", is(dwhres.getZone()))
-                .body("[0].cumul_mtt_rec", is(dwhres.getCumul_mtt_rec().floatValue()))
-                .body("[0].mois_annee", is(dwhres.getMois_annee()))
-                .body("[0].mtt_rec", is(dwhres.getMtt_rec().floatValue()))
-                .body("[1].jour", is(dwhRes1.getJour().toString()))
-                .body("[1].zone", is(dwhRes1.getZone()))
-                .body("[1].cumul_mtt_rec", is(dwhRes1.getCumul_mtt_rec().floatValue()))
-                .body("[1].mois_annee", is(dwhRes1.getMois_annee()))
-                .body("[1].mtt_rec", is(dwhRes1.getMtt_rec().floatValue()));
-        Mockito.verify(kpiService).getDwh();
-    }
-    @Test
-    void getDwhException(){
-        DwhRes dwhRes=new DwhRes();
-        DwhRes dwhRes1=new DwhRes();
-        List<DwhRes>list=Arrays.asList(dwhRes,dwhRes1);
-        Mockito.when(kpiService.getDwh()).thenThrow(new RuntimeException("Database error"));
-        given()
-                .when().get("/kpi/cron")
-                .then()
-                .statusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
-                .contentType(MediaType.APPLICATION_JSON);
-        Mockito.verify(kpiService).getDwh();
-    }
-    @Test
-    void testJson() {
+    void testJson() throws Exception {
         String msisdn="0323232323";
         Mockito.when(kpiService.testSms(any(String.class))).thenReturn(Response.noContent().build());
         given()
@@ -113,7 +54,7 @@ class KpiResourceTest extends QuarkusTestExtension {
         Mockito.verify(kpiService).testSms(any(String.class));
     }
     @Test
-    void testJsonException(){
+    void testJsonException() throws Exception{
         String msisdn="0323232323";
         Mockito.when(kpiService.testSms(any(String.class))).thenThrow(new RuntimeException("error occured"));
         given()
