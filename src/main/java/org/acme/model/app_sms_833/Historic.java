@@ -8,22 +8,23 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "historic")
+@Table(name = "\"historic\"")
 public class Historic {
     @Id
+    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(name="kpiDate")
     private LocalDate kpiDate;
 
-    @Column
+    @Column(name="sendDate")
     private LocalDate sendDate;
 
-    @Column
+    @Column(name="triUser")
     private String triUser;
 
-    @Column
+    @Column(name="idUser")
     private long idUser;
 
     public Historic(LocalDate kpiDate, User user) {

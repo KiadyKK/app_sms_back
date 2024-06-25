@@ -11,34 +11,36 @@ import org.mindrot.jbcrypt.BCrypt;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
+//@Table(name = "user")
+@Table(name = "\"user\"")
 public class User {
     @Id
+    @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(name="tri")
     private String tri;
 
-    @Column
+    @Column(name="mdp")
     private String mdp;
 
-    @Column
+    @Column(name="nom")
     private String nom;
 
-    @Column
+    @Column(name="prenom")
     private String prenom;
 
-    @Column
+    @Column(name="email")
     private String email;
 
-    @Column
+    @Column(name="tel")
     private String tel;
 
-    @Column
+    @Column(name="role")
     private int role;
 
-    @Column
+    @Column(name="status")
     private int status;
 
     public User(AddUserReq req) {

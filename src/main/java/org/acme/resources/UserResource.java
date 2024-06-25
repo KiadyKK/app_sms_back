@@ -1,5 +1,4 @@
 package org.acme.resources;
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -11,9 +10,7 @@ import org.acme.requests.AddUserReq;
 import org.acme.requests.LoginReq;
 import org.acme.requests.PutPasswordReq;
 import org.acme.services.UserService;
-
 import static org.acme.common.Constant.APPSMS;
-
 @Path("user")
 @ApplicationScoped
 public class UserResource {
@@ -42,7 +39,17 @@ public class UserResource {
     @PUT
     @Transactional
     @Path("putMdp")
-    public Response putMdp(PutPasswordReq req){return userService.modifyMdp(req);}
+    public Response putMdp(PutPasswordReq req){
+        try{
+            if(userService.modifyMdp(req)){
+                return Response.status(200).build();
+            }else{
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+        }catch(Exception e){
+            return null;
+        }
+    }
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

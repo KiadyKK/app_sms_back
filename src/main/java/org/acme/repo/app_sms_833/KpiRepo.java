@@ -1,13 +1,10 @@
 package org.acme.repo.app_sms_833;
-
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import org.acme.model.app_sms_833.Kpi;
-
 import java.time.LocalDate;
 import java.util.List;
-
 @ApplicationScoped
 public class KpiRepo implements PanacheRepository<Kpi> {
     @Transactional

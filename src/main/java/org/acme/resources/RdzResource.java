@@ -1,5 +1,4 @@
 package org.acme.resources;
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -9,9 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.acme.requests.AddRdzReq;
 import org.acme.services.RdzService;
-
 import static org.acme.common.Constant.APPSMS;
-
 @Path("rdz")
 @ApplicationScoped
 public class RdzResource {
@@ -33,6 +30,7 @@ public class RdzResource {
     public Response getAll(@QueryParam("nom") String nom) {
         return rdzService.getAll(nom);
     }
+
 
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
