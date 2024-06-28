@@ -1,5 +1,4 @@
 package org.acme.middleware;
-
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -38,34 +37,34 @@ public class DwhCron {
 
     @Scheduled(cron = "{dwh.expr.job}")
     void loadDwhData() {
-        LocalDate date = LocalDate.now().minusDays(1);
+        LocalDate yesterday=LocalDate.now().minusDays(1);
+        LocalDate startDate=yesterday.withDayOfMonth(1);
+        LocalDate endDate=yesterday;
         List<User> users = userRepo.findAll().stream().toList();
-
         AtomicInteger i = new AtomicInteger();
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         Runnable task = () -> {
             i.getAndIncrement();
-            boolean check = startCron(date);
+            boolean check = startCron(startDate, endDate);
             if (!check || i.get() == 10) {
                 String message;
                 if (i.get() == 10) message = " non chargées après 10 tentatives !";
                 else message = " chargées !";
                 for (User user : users) {
-                    mailShared.sendMail(user.getEmail(), date, message);
+                    mailShared.sendMail(user.getEmail(), endDate, message);
                 }
                 executor.shutdown();
-                LOGGER.info("Données du " + date + message);
+                LOGGER.info("Données du " + endDate + message);
             } else
-                LOGGER.info("Données du " + date + " indisponibles !");
+                LOGGER.info("Données du " + endDate + " indisponibles !");
         };
         executor.scheduleAtFixedRate(task, 0, 3600, TimeUnit.SECONDS);
     }
 
-    private boolean startCron(LocalDate date) {
-        List<DwhRes> dwhResList = dwhRepo.getAll(date);
+    boolean startCron(LocalDate startDate, LocalDate endDate) {
+        List<DwhRes> dwhResList = dwhRepo.getAll(endDate);
         Map<LocalDate, List<DwhRes>> dwhResListGrouped = dwhResList.stream().collect(Collectors.groupingBy(DwhRes::getJour));
         boolean check = false;
-
         for (LocalDate jour : dwhResListGrouped.keySet()) {
             check = dwhResListGrouped.get(jour).stream().allMatch(dwhRes -> dwhRes.getParc() == 0);
             if (check) break;
@@ -73,7 +72,7 @@ public class DwhCron {
 
         if (!check) {
             //Remove all data before persist
-            kpiRepo.removeAll(date);
+            kpiRepo.removeAll(endDate);
 
             for (DwhRes dwhRes : dwhResList) {
                 Kpi kpi = new Kpi(dwhRes);
